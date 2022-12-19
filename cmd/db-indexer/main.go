@@ -54,8 +54,10 @@ func main() {
 	metadataInfo := true
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line != "" && metadataInfo {
-			if fieldRegex.MatchString(line) {
+		if metadataInfo {
+			if strings.TrimSpace(line) == "" {
+				metadataInfo = false
+			} else if fieldRegex.MatchString(line) {
 				match := fieldRegex.FindStringSubmatch(line)
 				field = strings.ReplaceAll(strings.ToLower(match[1]), "-", "_")
 				data = strings.TrimSpace(match[2])
