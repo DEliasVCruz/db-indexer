@@ -43,7 +43,7 @@ func main() {
 		"x_folder":                  "",
 		"x_origin":                  "",
 		"x_filename":                "",
-		"content":                   "",
+		"contents":                  "",
 	}
 
 	scanner := bufio.NewScanner(input)
@@ -70,7 +70,7 @@ func main() {
 				fmt.Println(data[1])
 			}
 		} else {
-			metadataInfo = false
+			fields["contents"] += fmt.Sprintf("%s\n", line)
 		}
 	}
 
