@@ -16,6 +16,37 @@ import (
 
 const serverPort = 4080
 
+var client = http.Client{
+	Timeout: 30 * time.Second,
+}
+
+func netwPost(endPoint string, payLoad *bytes.Reader) (int, []byte) {
+	requestURL := fmt.Sprintf("http://localhost:%d/api/%s", serverPort, endPoint)
+	req, err := http.NewRequest(http.MethodPost, requestURL, payLoad)
+	if err != nil {
+		log.Fatalf("client: could not create request: %s\n", err)
+	}
+	req.SetBasicAuth("test_admin", "test_password")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("client: error making http request: %s\n", err)
+	}
+	defer resp.Body.Close()
+
+	status := resp.StatusCode
+	log.Printf("client: status code: %d\n", status)
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("client: could not read response body: %s\n", err)
+	}
+
+	return status, body
+}
+
 func createIndex() {
 	jsonBody := []byte(`
 						{
@@ -106,33 +137,13 @@ func createIndex() {
 							}
 						}
 	`)
-	bodyReader := bytes.NewReader(jsonBody)
+	jsonPayLoad := bytes.NewReader(jsonBody)
+	status, respBody := netwPost("/index", jsonPayLoad)
 
-	requestURL := fmt.Sprintf("http://localhost:%d/api/index", serverPort)
-	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
-	if err != nil {
-		log.Fatalf("client: could not create request: %s\n", err)
-	}
-	req.SetBasicAuth("test_admin", "test_password")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
-
-	client := http.Client{
-		Timeout: 30 * time.Second,
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("client: error making http request: %s\n", err)
-	}
-	defer resp.Body.Close()
-
-	log.Println("client: got response!")
-	log.Printf("client: status code: %d\n", resp.StatusCode)
-
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("client: could not read response body: %s\n", err)
+	if status == 200 {
+		fmt.Println("Evertthing is ok")
+	} else {
+		fmt.Printf("Something went wrogn got status code: %d", status)
 	}
 	fmt.Printf("client: response body: %s\n", respBody)
 }
