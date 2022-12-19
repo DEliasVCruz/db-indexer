@@ -2,13 +2,140 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 )
+
+const serverPort = 4080
+
+func createIndex() {
+	jsonBody := []byte(`
+						{
+							"name": "testEmails",
+							"storage_type": "disk",
+							"shard_num": 3,
+							"settings": {},
+							"mappings": {
+								"properties": {
+									"message_id": {
+										"type": "keyword",
+										"index": true,
+										"store": false
+									},
+									"date": {
+										"type": "date",
+										"format": "Mon, 2 Jan 2006 15:04:05 -0700 (MST)",
+										"time_zone": "",
+										"index": true,
+										"store": false,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"from": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"to": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"subject": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"x_from": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"x_to": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"cc": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"x_bcc": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"x_folder": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									},
+									"x_origin": {
+										"type": "text",
+										"index": true,
+										"store": true,
+										"sortable": true,
+										"aggregatable": true
+									}
+								}
+							}
+						}
+	`)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	requestURL := fmt.Sprintf("http://localhost:%d/api/index", serverPort)
+	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
+	if err != nil {
+		log.Fatalf("client: could not create request: %s\n", err)
+	}
+	req.SetBasicAuth("test_admin", "test_password")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
+
+	client := http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("client: error making http request: %s\n", err)
+	}
+	defer resp.Body.Close()
+
+	log.Println("client: got response!")
+	log.Printf("client: status code: %d\n", resp.StatusCode)
+
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("client: could not read response body: %s\n", err)
+	}
+	fmt.Printf("client: response body: %s\n", respBody)
+}
 
 func check(err error) {
 	if err != nil {
