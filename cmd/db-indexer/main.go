@@ -20,10 +20,11 @@ var client = http.Client{
 	Timeout: 30 * time.Second,
 }
 
-func request(method, endPoint string, payLoad *bytes.Reader) (int, []byte) {
+func request(method, endPoint string, payLoad []byte) (int, []byte) {
+	bodyReader := bytes.NewReader(payLoad)
 	requestURL := fmt.Sprintf("http://localhost:%d/api/%s", serverPort, endPoint)
 
-	req, err := http.NewRequest(method, requestURL, payLoad)
+	req, err := http.NewRequest(method, requestURL, bodyReader)
 	check("requestCreation", err)
 
 	req.SetBasicAuth("test_admin", "test_password")
@@ -35,7 +36,7 @@ func request(method, endPoint string, payLoad *bytes.Reader) (int, []byte) {
 	defer resp.Body.Close()
 
 	status := resp.StatusCode
-	log.Printf("client: status code: %d\n", status)
+	log.Printf("client: succsefull response with status code %d\n", status)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	check("responseRead", err)
@@ -222,6 +223,10 @@ func main() {
 	fields["charset"] = strings.Split(contentTypes[1], "=")[1]
 	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], "\\", "/")
 
-	myJson, _ := json.Marshal(fields)
-	fmt.Println(string(myJson))
+	jsonPayLoad, _ := json.Marshal(fields)
+	status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
+	if status == 200 {
+		log.Printf("client: succsefull response with status code %d", status)
+		log.Printf("client: response body %s", respBody)
+	}
 }
