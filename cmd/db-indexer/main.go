@@ -20,9 +20,9 @@ var client = http.Client{
 	Timeout: 30 * time.Second,
 }
 
-func netwPost(endPoint string, payLoad *bytes.Reader) (int, []byte) {
+func request(method, endPoint string, payLoad *bytes.Reader) (int, []byte) {
 	requestURL := fmt.Sprintf("http://localhost:%d/api/%s", serverPort, endPoint)
-	req, err := http.NewRequest(http.MethodPost, requestURL, payLoad)
+	req, err := http.NewRequest(method, requestURL, payLoad)
 	if err != nil {
 		log.Fatalf("client: could not create request: %s\n", err)
 	}
@@ -138,7 +138,7 @@ func createIndex() {
 						}
 	`)
 	jsonPayLoad := bytes.NewReader(jsonBody)
-	status, respBody := netwPost("/index", jsonPayLoad)
+	status, respBody := request(http.MethodPost, "/index", jsonPayLoad)
 
 	if status == 200 {
 		fmt.Println("Evertthing is ok")
