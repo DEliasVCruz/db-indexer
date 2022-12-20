@@ -22,27 +22,23 @@ var client = http.Client{
 
 func request(method, endPoint string, payLoad *bytes.Reader) (int, []byte) {
 	requestURL := fmt.Sprintf("http://localhost:%d/api/%s", serverPort, endPoint)
+
 	req, err := http.NewRequest(method, requestURL, payLoad)
-	if err != nil {
-		log.Fatalf("client: could not create request: %s\n", err)
-	}
+	check("requestCreation", err)
+
 	req.SetBasicAuth("test_admin", "test_password")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
 
 	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatalf("client: error making http request: %s\n", err)
-	}
+	check("requestAction", err)
 	defer resp.Body.Close()
 
 	status := resp.StatusCode
 	log.Printf("client: status code: %d\n", status)
 
 	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("client: could not read response body: %s\n", err)
-	}
+	check("responseRead", err)
 
 	return status, body
 }
@@ -148,9 +144,20 @@ func createIndex() {
 	fmt.Printf("client: response body: %s\n", respBody)
 }
 
-func check(err error) {
+func check(check string, err error) {
 	if err != nil {
-		log.Fatal(err)
+		switch check {
+		case "requestCreation":
+			log.Fatalf("client: could not create request: %s\n", err)
+		case "fileOpen":
+			log.Fatalf("file: could not open given file: %s\n", err)
+		case "requestAction":
+			log.Fatalf("client: error making http request: %s\n", err)
+		case "responseRead":
+			log.Fatalf("client: could not read response body: %s\n", err)
+		default:
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -159,7 +166,7 @@ var data string
 
 func main() {
 	input, err := os.Open("./enron_mail_20110402/maildir/bailey-s/all_documents/10_")
-	check(err)
+	check("fileOpen", err)
 	defer input.Close()
 
 	var fields = map[string]string{
