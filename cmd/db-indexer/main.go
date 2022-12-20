@@ -15,6 +15,7 @@ import (
 )
 
 const serverPort = 4080
+const defaultIndex = "emails"
 
 var client = http.Client{
 	Timeout: 30 * time.Second,
@@ -45,104 +46,29 @@ func request(method, endPoint string, payLoad []byte) (int, []byte) {
 }
 
 func createIndex() {
-	jsonBody := []byte(`
-						{
-							"name": "testEmails",
-							"storage_type": "disk",
-							"shard_num": 3,
-							"settings": {},
-							"mappings": {
-								"properties": {
-									"message_id": {
-										"type": "keyword",
-										"index": true,
-										"store": false
-									},
-									"date": {
-										"type": "date",
-										"format": "Mon, 2 Jan 2006 15:04:05 -0700 (MST)",
-										"time_zone": "",
-										"index": true,
-										"store": false,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"from": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"to": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"subject": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"x_from": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"x_to": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"cc": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"x_bcc": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"x_folder": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									},
-									"x_origin": {
-										"type": "text",
-										"index": true,
-										"store": true,
-										"sortable": true,
-										"aggregatable": true
-									}
-								}
-							}
-						}
-	`)
-	jsonPayLoad := bytes.NewReader(jsonBody)
-	status, respBody := request(http.MethodPost, "/index", jsonPayLoad)
+	status, _ := request(http.MethodHead, fmt.Sprintf("index/%s", defaultIndex), nil)
+	if status == 200 {
+		log.Printf("index: the %s index already exists", defaultIndex)
+		status, _ := request(http.MethodDelete, fmt.Sprintf("index/%s", defaultIndex), nil)
+		if status == 200 {
+			log.Printf("index: the %s index was deleted", defaultIndex)
+		} else {
+			log.Fatalf("index: something went wrong trying to delete index %s", defaultIndex)
+		}
+	} else {
+		log.Printf("index: the %s index does not exist", defaultIndex)
+	}
+	jsonBody, err := os.ReadFile("./index.json")
+	check("fileOpen", err)
+
+	status, respBody := request(http.MethodPost, "index", jsonBody)
 
 	if status == 200 {
-		fmt.Println("Evertthing is ok")
+		log.Printf("index: %s was succsefully created", defaultIndex)
 	} else {
-		fmt.Printf("Something went wrogn got status code: %d", status)
+		log.Printf("status: something went wrong got status code %d", status)
 	}
-	fmt.Printf("client: response body: %s\n", respBody)
+	log.Printf("client: response body %s\n", respBody)
 }
 
 func check(check string, err error) {
@@ -166,6 +92,7 @@ var field string
 var data string
 
 func main() {
+	createIndex()
 	input, err := os.Open("./enron_mail_20110402/maildir/bailey-s/all_documents/10_")
 	check("fileOpen", err)
 	defer input.Close()
