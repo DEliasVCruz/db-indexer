@@ -207,12 +207,9 @@ func main() {
 				field = strings.ReplaceAll(strings.ToLower(match[1]), "-", "_")
 				data = strings.TrimSpace(match[2])
 				fields[field] = strings.TrimSpace(data)
-				fmt.Println(field)
-				fmt.Println(data)
 			} else {
 				data = mailToRegex.FindStringSubmatch(line)[1]
 				fields[field] += fmt.Sprintf(" %s", strings.TrimSpace(data))
-				fmt.Println(data[1])
 			}
 		} else {
 			fields["contents"] += fmt.Sprintf("%s\n", line)
