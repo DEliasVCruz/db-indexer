@@ -88,9 +88,6 @@ func check(check string, err error) {
 	}
 }
 
-var field string
-var data string
-
 var mainDir = filepath.Join(os.Args[1], "maildir")
 
 var fieldRegex, _ = regexp.Compile(`^([\w\-]*): (.*)`)
@@ -103,7 +100,7 @@ func dataExtract(path string) (map[string]string, error) {
 	check("fileOpen", err)
 	defer input.Close()
 
-	var fields = map[string]string{
+	fields := map[string]string{
 		"message_id":                "",
 		"date":                      "",
 		"from":                      "",
@@ -124,6 +121,8 @@ func dataExtract(path string) (map[string]string, error) {
 		"x_filename":                "",
 		"contents":                  "",
 	}
+	field := ""
+	data := ""
 
 	metadataInfo := true
 	scanner := bufio.NewScanner(input)
@@ -170,14 +169,14 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	fullPath := filepath.Join(mainDir, childPath)
 	if err != nil {
 		log.Printf("error: when attempting to read file %s raised %s", fullPath, err)
-		return fs.SkipDir
+		return nil
 	}
 
 	if !dir.IsDir() {
 		fields, err := dataExtract(fullPath)
 		if err != nil {
 			log.Printf("error: %s", err)
-			return fs.SkipDir
+			return nil
 		}
 
 		jsonPayLoad, _ := json.Marshal(fields)
