@@ -130,7 +130,7 @@ func dataExtract(path string) map[string]string {
 		line := scanner.Text()
 		log.Printf("data: reading line - %s\n", line)
 		if metadataInfo {
-			if strings.TrimSpace(line) == "" {
+			if field == "x_filename" {
 				metadataInfo = false
 			} else if fieldRegex.MatchString(line) {
 				match := fieldRegex.FindStringSubmatch(line)
