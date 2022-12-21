@@ -163,9 +163,17 @@ func createDoc(payLoad map[string]string) {
 	}
 }
 
+func mailDirIndex(mailDir fs.FS, rootPath string) {
+	fs.WalkDir(mailDir, rootPath, indexWalker)
+	if len(records) != 0 {
+		createDocBatch(records)
+		records = nil
+	}
+}
+
 var records = []map[string]string{}
 
-func fsWalker(childPath string, dir fs.DirEntry, err error) error {
+func indexWalker(childPath string, dir fs.DirEntry, err error) error {
 	fullPath := filepath.Join(mainDir, childPath)
 	if err != nil {
 		log.Printf("error: when attempting to read file %s raised %s", fullPath, err)
@@ -191,10 +199,5 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 
 func main() {
 	createIndex()
-	fsys := os.DirFS(mainDir)
-	fs.WalkDir(fsys, ".", fsWalker)
-	if len(records) != 0 {
-		createDocBatch(records)
-		records = nil
-	}
+	mailDirIndex(os.DirFS(mainDir), "bailey-s/inbox")
 }
