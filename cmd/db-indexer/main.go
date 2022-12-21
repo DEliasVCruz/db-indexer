@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -91,69 +93,85 @@ func check(check string, err error) {
 var field string
 var data string
 
+var mainDir = "enron_mail_20110402/maildir"
+
+func fileIndexing(childPath string, dir fs.DirEntry, err error) error {
+	fullPath := filepath.Join(mainDir, childPath)
+	if err != nil {
+		log.Printf("file: the following erro ocurred while attempting to read file %s - %s", fullPath, err)
+		return fs.SkipDir
+	}
+
+	if !dir.IsDir() {
+		input, err := os.Open(fullPath)
+		check("fileOpen", err)
+		defer input.Close()
+
+		var fields = map[string]string{
+			"message_id":                "",
+			"date":                      "",
+			"from":                      "",
+			"to":                        "",
+			"subject":                   "",
+			"cc":                        "",
+			"mime_version":              "",
+			"content_type":              "",
+			"charset":                   "",
+			"content_transfer_encoding": "",
+			"bcc":                       "",
+			"x_from":                    "",
+			"x_to":                      "",
+			"x_cc":                      "",
+			"x_bcc":                     "",
+			"x_folder":                  "",
+			"x_origin":                  "",
+			"x_filename":                "",
+			"contents":                  "",
+		}
+
+		scanner := bufio.NewScanner(input)
+
+		fieldRegex, _ := regexp.Compile(`^([\w\-]*): (.*)`)
+		mailToRegex, _ := regexp.Compile(`^\s+(.*)\s*$`)
+		regexMessage, _ := regexp.Compile(`^<(\d+\.\d+)\..*`)
+		metadataInfo := true
+		for scanner.Scan() {
+			line := scanner.Text()
+			if metadataInfo {
+				if strings.TrimSpace(line) == "" {
+					metadataInfo = false
+				} else if fieldRegex.MatchString(line) {
+					match := fieldRegex.FindStringSubmatch(line)
+					field = strings.ReplaceAll(strings.ToLower(match[1]), "-", "_")
+					data = strings.TrimSpace(match[2])
+					fields[field] = strings.TrimSpace(data)
+				} else {
+					data = mailToRegex.FindStringSubmatch(line)[1]
+					fields[field] += fmt.Sprintf(" %s", strings.TrimSpace(data))
+				}
+			} else {
+				fields["contents"] += fmt.Sprintf("%s\n", line)
+			}
+		}
+
+		fields["message_id"] = regexMessage.FindStringSubmatch(fields["message_id"])[1]
+		contentTypes := strings.Split(fields["content_type"], ";")
+		fields["content_type"] = contentTypes[0]
+		fields["charset"] = strings.Split(contentTypes[1], "=")[1]
+		fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], "\\", "/")
+
+		jsonPayLoad, _ := json.Marshal(fields)
+		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
+		if status == 200 {
+			log.Printf("client: succsefull response with status code %d", status)
+			log.Printf("client: response body %s", respBody)
+		}
+
+	}
+
+	return nil
+}
+
 func main() {
 	createIndex()
-	input, err := os.Open("./enron_mail_20110402/maildir/bailey-s/all_documents/10_")
-	check("fileOpen", err)
-	defer input.Close()
-
-	var fields = map[string]string{
-		"message_id":                "",
-		"date":                      "",
-		"from":                      "",
-		"to":                        "",
-		"subject":                   "",
-		"cc":                        "",
-		"mime_version":              "",
-		"content_type":              "",
-		"charset":                   "",
-		"content_transfer_encoding": "",
-		"bcc":                       "",
-		"x_from":                    "",
-		"x_to":                      "",
-		"x_cc":                      "",
-		"x_bcc":                     "",
-		"x_folder":                  "",
-		"x_origin":                  "",
-		"x_filename":                "",
-		"contents":                  "",
-	}
-
-	scanner := bufio.NewScanner(input)
-
-	fieldRegex, _ := regexp.Compile(`^([\w\-]*): (.*)`)
-	mailToRegex, _ := regexp.Compile(`^\s+(.*)\s*$`)
-	regexMessage, _ := regexp.Compile(`^<(\d+\.\d+)\..*`)
-	metadataInfo := true
-	for scanner.Scan() {
-		line := scanner.Text()
-		if metadataInfo {
-			if strings.TrimSpace(line) == "" {
-				metadataInfo = false
-			} else if fieldRegex.MatchString(line) {
-				match := fieldRegex.FindStringSubmatch(line)
-				field = strings.ReplaceAll(strings.ToLower(match[1]), "-", "_")
-				data = strings.TrimSpace(match[2])
-				fields[field] = strings.TrimSpace(data)
-			} else {
-				data = mailToRegex.FindStringSubmatch(line)[1]
-				fields[field] += fmt.Sprintf(" %s", strings.TrimSpace(data))
-			}
-		} else {
-			fields["contents"] += fmt.Sprintf("%s\n", line)
-		}
-	}
-
-	fields["message_id"] = regexMessage.FindStringSubmatch(fields["message_id"])[1]
-	contentTypes := strings.Split(fields["content_type"], ";")
-	fields["content_type"] = contentTypes[0]
-	fields["charset"] = strings.Split(contentTypes[1], "=")[1]
-	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], "\\", "/")
-
-	jsonPayLoad, _ := json.Marshal(fields)
-	status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
-	if status == 200 {
-		log.Printf("client: succsefull response with status code %d", status)
-		log.Printf("client: response body %s", respBody)
-	}
 }
