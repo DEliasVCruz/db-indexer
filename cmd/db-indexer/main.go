@@ -127,7 +127,7 @@ func dataExtract(path string) map[string]string {
 
 	fieldRegex, _ := regexp.Compile(`^([\w\-]*): (.*)`)
 	brokenLineRegex, _ := regexp.Compile(`^\s*(.*)\s*$`)
-	regexMessage, _ := regexp.Compile(`^<(\d+\.\d+)\..*`)
+	messageRegex, _ := regexp.Compile(`^<(\d+\.\d+)\..*`)
 	metadataInfo := true
 	for scanner.Scan() {
 		line := scanner.Text()
