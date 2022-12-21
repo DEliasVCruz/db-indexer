@@ -60,7 +60,7 @@ func CreateDoc(index string, payLoad map[string]string) {
 	}
 }
 
-func CreateDocBatch(index string, payLoad map[string]string) {
+func CreateDocBatch(index string, payLoad []map[string]string) {
 	jsonSlice, _ := json.Marshal(payLoad)
 	jsonPayLoad := []byte(fmt.Sprintf(`{ "index": "%s", "records": %s }`, index, jsonSlice))
 	status, respBody := request.Post("api/_bulkv2", jsonPayLoad)
