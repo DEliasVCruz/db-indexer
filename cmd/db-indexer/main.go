@@ -145,6 +145,18 @@ func dataExtract(path string) (map[string]string, error) {
 
 }
 
+func createDocBatch(payLoad []map[string]string) {
+	jsonSlice, _ := json.Marshal(payLoad)
+	jsonPayLoad := []byte(fmt.Sprintf(`{ "index": "%s", "records": %s }`, defaultIndex, jsonSlice))
+	status, respBody := request(http.MethodPost, "_bulkv2", jsonPayLoad)
+	if status == 200 {
+		log.Printf("client: successful response with status %d and body %s", status, respBody)
+	} else {
+		log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
+	}
+
+}
+
 func createDoc(payLoad map[string]string) {
 	jsonPayLoad, _ := json.Marshal(payLoad)
 	status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
@@ -154,6 +166,8 @@ func createDoc(payLoad map[string]string) {
 		log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
 	}
 }
+
+var records = []map[string]string{}
 
 func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	fullPath := filepath.Join(mainDir, childPath)
@@ -168,7 +182,12 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 			log.Printf("error: %s", err)
 			return nil
 		}
-		createDoc(fields)
+		if len(records) < 2 {
+			records = append(records, fields)
+			return nil
+		}
+		createDocBatch(records)
+		records = nil
 	}
 
 	return nil
