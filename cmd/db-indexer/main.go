@@ -124,14 +124,14 @@ func dataExtract(path string) (map[string]string, error) {
 	field := ""
 	data := ""
 
-	metadataInfo := true
+	allMetadataParsed := false
 	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
 		line := scanner.Text()
 		log.Printf("data: reading line - %s\n", line)
-		if metadataInfo {
+		if !allMetadataParsed {
 			if field == "x_filename" {
-				metadataInfo = false
+				allMetadataParsed = true
 			} else if fieldRegex.MatchString(line) {
 				match := fieldRegex.FindStringSubmatch(line)
 				field = strings.ReplaceAll(strings.ToLower(match[1]), "-", "_")
@@ -146,7 +146,7 @@ func dataExtract(path string) (map[string]string, error) {
 		}
 	}
 
-	if fields["x_filename"] == "" {
+	if !allMetadataParsed {
 		return fields, errors.New(fmt.Sprintf("broken metadata at %s aborting indexing", path))
 	}
 
