@@ -182,10 +182,10 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 			log.Printf("error: %s", err)
 			return nil
 		}
-		if len(records) < 2 {
-			records = append(records, fields)
-			return nil
-		}
+		records = append(records, fields)
+	}
+
+	if len(records) == 2 {
 		createDocBatch(records)
 		records = nil
 	}
@@ -197,4 +197,8 @@ func main() {
 	createIndex()
 	fsys := os.DirFS(mainDir)
 	fs.WalkDir(fsys, ".", fsWalker)
+	if len(records) != 0 {
+		createDocBatch(records)
+		records = nil
+	}
 }
