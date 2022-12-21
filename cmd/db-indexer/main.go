@@ -65,7 +65,7 @@ func createIndex() {
 	if status == 200 {
 		log.Printf("index: %s index was successfully created", defaultIndex)
 	} else {
-		log.Printf("status: something went wrong got status code %d", status)
+		log.Fatalf("status: something went wrong got status code %d", status)
 	}
 	log.Printf("client: response body %s\n", respBody)
 }
@@ -174,6 +174,8 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
 		if status == 200 {
 			log.Printf("client: successful response with status %d and body %s", status, respBody)
+		} else {
+			log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
 		}
 	}
 
