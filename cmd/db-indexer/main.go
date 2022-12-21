@@ -148,7 +148,10 @@ func dataExtract(path string) map[string]string {
 		}
 	}
 
-	fields["message_id"] = regexMessage.FindStringSubmatch(fields["message_id"])[1]
+	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
+	if messageId != nil {
+		fields["message_id"] = messageId[1]
+	}
 	contentTypes := strings.Split(fields["content_type"], ";")
 	if len(contentTypes) > 1 {
 		fields["content_type"] = contentTypes[0]
