@@ -169,7 +169,7 @@ func dataExtract(path string) (map[string]string, error) {
 func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	fullPath := filepath.Join(mainDir, childPath)
 	if err != nil {
-		log.Printf("file: the following error occurred while attempting to read file %s - %s", fullPath, err)
+		log.Printf("error: when attempting to read file %s raised %s", fullPath, err)
 		return fs.SkipDir
 	}
 
@@ -184,7 +184,7 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 				log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
 			}
 		} else {
-			fmt.Printf("error: %s", err)
+			log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
 		}
 	}
 
