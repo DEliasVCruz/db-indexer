@@ -95,7 +95,7 @@ var data string
 
 var mainDir = "enron_mail_20110402/maildir"
 
-func dataExtract(path string) {
+func dataExtract(path string) map[string]string {
 	log.Printf("file: reading file path %s", path)
 	input, err := os.Open(path)
 	check("fileOpen", err)
@@ -154,12 +154,7 @@ func dataExtract(path string) {
 	fields["charset"] = strings.Split(contentTypes[1], "=")[1]
 	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], "\\", "/")
 
-	jsonPayLoad, _ := json.Marshal(fields)
-	status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
-	if status == 200 {
-		log.Printf("client: succsefull response with status code %d", status)
-		log.Printf("client: response body %s", respBody)
-	}
+	return fields
 
 }
 
@@ -171,7 +166,13 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	}
 
 	if !dir.IsDir() {
-		dataExtract(fullPath)
+		fields := dataExtract(fullPath)
+		jsonPayLoad, _ := json.Marshal(fields)
+		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
+		if status == 200 {
+			log.Printf("client: succsefull response with status code %d", status)
+			log.Printf("client: response body %s", respBody)
+		}
 	}
 
 	return nil
