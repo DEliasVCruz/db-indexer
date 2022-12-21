@@ -95,7 +95,7 @@ var data string
 
 var mainDir = "enron_mail_20110402/maildir"
 
-func fileIndexing(childPath string, dir fs.DirEntry, err error) error {
+func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	fullPath := filepath.Join(mainDir, childPath)
 	if err != nil {
 		log.Printf("file: the following erro ocurred while attempting to read file %s - %s", fullPath, err)
