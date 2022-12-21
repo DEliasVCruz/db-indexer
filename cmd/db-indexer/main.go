@@ -132,7 +132,7 @@ func fileIndexing(childPath string, dir fs.DirEntry, err error) error {
 		scanner := bufio.NewScanner(input)
 
 		fieldRegex, _ := regexp.Compile(`^([\w\-]*): (.*)`)
-		mailToRegex, _ := regexp.Compile(`^\s+(.*)\s*$`)
+		brokenLineRegex, _ := regexp.Compile(`^\s*(.*)\s*$`)
 		regexMessage, _ := regexp.Compile(`^<(\d+\.\d+)\..*`)
 		metadataInfo := true
 		for scanner.Scan() {
@@ -146,7 +146,7 @@ func fileIndexing(childPath string, dir fs.DirEntry, err error) error {
 					data = strings.TrimSpace(match[2])
 					fields[field] = strings.TrimSpace(data)
 				} else {
-					data = mailToRegex.FindStringSubmatch(line)[1]
+					data = brokenLineRegex.FindStringSubmatch(line)[1]
 					fields[field] += fmt.Sprintf(" %s", strings.TrimSpace(data))
 				}
 			} else {
