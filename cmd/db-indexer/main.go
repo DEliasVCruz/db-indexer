@@ -38,13 +38,10 @@ func request(method, endPoint string, payLoad []byte) (int, []byte) {
 	check("requestAction", err)
 	defer resp.Body.Close()
 
-	status := resp.StatusCode
-	log.Printf("client: successful response with status code %d\n", status)
-
 	body, err := ioutil.ReadAll(resp.Body)
 	check("responseRead", err)
 
-	return status, body
+	return resp.StatusCode, body
 }
 
 func createIndex() {
