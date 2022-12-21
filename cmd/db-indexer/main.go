@@ -176,13 +176,14 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	if !dir.IsDir() {
 		fields, err := dataExtract(fullPath)
 		if err != nil {
-			jsonPayLoad, _ := json.Marshal(fields)
-			status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
-			if status == 200 {
-				log.Printf("client: successful response with status %d and body %s", status, respBody)
-			} else {
-				log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
-			}
+			log.Printf("error: %s", err)
+			return fs.SkipDir
+		}
+
+		jsonPayLoad, _ := json.Marshal(fields)
+		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
+		if status == 200 {
+			log.Printf("client: successful response with status %d and body %s", status, respBody)
 		} else {
 			log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
 		}
