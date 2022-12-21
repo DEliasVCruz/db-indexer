@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -96,7 +97,7 @@ var fieldRegex, _ = regexp.Compile(`^([\w\-]*): (.*)`)
 var brokenLineRegex, _ = regexp.Compile(`^\s*(.*)\s*$`)
 var messageRegex, _ = regexp.Compile(`^<(\d+\.\d+)\..*`)
 
-func dataExtract(path string) map[string]string {
+func dataExtract(path string) (map[string]string, error) {
 	log.Printf("file: reading file path %s", path)
 	input, err := os.Open(path)
 	check("fileOpen", err)
@@ -146,6 +147,10 @@ func dataExtract(path string) map[string]string {
 		}
 	}
 
+	if fields["x_filename"] == "" {
+		return fields, errors.New(fmt.Sprintf("broken metadata at %s aborting indexing", path))
+	}
+
 	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
 	if messageId != nil {
 		fields["message_id"] = messageId[1]
@@ -157,7 +162,7 @@ func dataExtract(path string) map[string]string {
 	}
 	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], "\\", "/")
 
-	return fields
+	return fields, nil
 
 }
 
@@ -169,13 +174,17 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	}
 
 	if !dir.IsDir() {
-		fields := dataExtract(fullPath)
-		jsonPayLoad, _ := json.Marshal(fields)
-		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
-		if status == 200 {
-			log.Printf("client: successful response with status %d and body %s", status, respBody)
+		fields, err := dataExtract(fullPath)
+		if err != nil {
+			jsonPayLoad, _ := json.Marshal(fields)
+			status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
+			if status == 200 {
+				log.Printf("client: successful response with status %d and body %s", status, respBody)
+			} else {
+				log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
+			}
 		} else {
-			log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
+			fmt.Printf("error: %s", err)
 		}
 	}
 
