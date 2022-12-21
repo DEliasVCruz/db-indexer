@@ -101,24 +101,21 @@ func dataExtract(path string) (map[string]string, error) {
 	defer input.Close()
 
 	fields := map[string]string{}
-	field := ""
-	data := ""
+	field := []byte("")
 
 	allMetadataParsed := false
 	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := scanner.Bytes()
 		if !allMetadataParsed {
-			if field == "x_filename" {
+			if bytes.Equal(field, []byte("x_filename")) {
 				allMetadataParsed = true
-			} else if fieldRegex.MatchString(line) {
-				match := fieldRegex.FindStringSubmatch(line)
-				field = strings.ReplaceAll(strings.ToLower(match[1]), "-", "_")
-				data = strings.TrimSpace(match[2])
-				fields[field] = strings.TrimSpace(data)
+			} else if fieldRegex.Match(line) {
+				match := fieldRegex.FindSubmatch(line)
+				field = bytes.ReplaceAll(bytes.ToLower(match[1]), []byte("-"), []byte("_"))
+				fields[string(field)] = string(bytes.TrimSpace(match[2]))
 			} else {
-				data = brokenLineRegex.FindStringSubmatch(line)[1]
-				fields[field] += fmt.Sprintf(" %s", strings.TrimSpace(data))
+				fields[string(field)] += fmt.Sprintf(" %s", bytes.TrimSpace(brokenLineRegex.FindSubmatch(line)[1]))
 			}
 		} else {
 			fields["contents"] += fmt.Sprintf("%s\n", line)
