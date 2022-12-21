@@ -47,10 +47,10 @@ func request(method, endPoint string, payLoad []byte) (int, []byte) {
 func createIndex() {
 	status, _ := request(http.MethodHead, fmt.Sprintf("index/%s", defaultIndex), nil)
 	if status == 200 {
-		log.Printf("index: the %s index already exists", defaultIndex)
+		log.Printf("index: %s index already exists", defaultIndex)
 		status, _ := request(http.MethodDelete, fmt.Sprintf("index/%s", defaultIndex), nil)
 		if status == 200 {
-			log.Printf("index: the %s index was deleted", defaultIndex)
+			log.Printf("index: %s index was deleted", defaultIndex)
 		} else {
 			log.Fatalf("index: something went wrong trying to delete index %s", defaultIndex)
 		}
@@ -63,7 +63,7 @@ func createIndex() {
 	status, respBody := request(http.MethodPost, "index", jsonBody)
 
 	if status == 200 {
-		log.Printf("index: %s was successfully created", defaultIndex)
+		log.Printf("index: %s index was successfully created", defaultIndex)
 	} else {
 		log.Printf("status: something went wrong got status code %d", status)
 	}
@@ -173,8 +173,7 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 		jsonPayLoad, _ := json.Marshal(fields)
 		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
 		if status == 200 {
-			log.Printf("client: successful response with status code %d", status)
-			log.Printf("client: response body %s", respBody)
+			log.Printf("client: successful response with status %d and body %s", status, respBody)
 		}
 	}
 
