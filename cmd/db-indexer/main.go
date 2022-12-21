@@ -100,27 +100,7 @@ func dataExtract(path string) (map[string]string, error) {
 	check("fileOpen", err)
 	defer input.Close()
 
-	fields := map[string]string{
-		"message_id":                "",
-		"date":                      "",
-		"from":                      "",
-		"to":                        "",
-		"subject":                   "",
-		"cc":                        "",
-		"mime_version":              "",
-		"content_type":              "",
-		"charset":                   "",
-		"content_transfer_encoding": "",
-		"bcc":                       "",
-		"x_from":                    "",
-		"x_to":                      "",
-		"x_cc":                      "",
-		"x_bcc":                     "",
-		"x_folder":                  "",
-		"x_origin":                  "",
-		"x_filename":                "",
-		"contents":                  "",
-	}
+	fields := map[string]string{}
 	field := ""
 	data := ""
 
