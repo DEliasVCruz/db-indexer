@@ -108,7 +108,6 @@ func dataExtract(path string) (map[string]string, error) {
 	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
 		line := scanner.Text()
-		log.Printf("data: reading line - %s\n", line)
 		if !allMetadataParsed {
 			if field == "x_filename" {
 				allMetadataParsed = true
