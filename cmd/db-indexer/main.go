@@ -39,7 +39,7 @@ func request(method, endPoint string, payLoad []byte) (int, []byte) {
 	defer resp.Body.Close()
 
 	status := resp.StatusCode
-	log.Printf("client: succsefull response with status code %d\n", status)
+	log.Printf("client: successful response with status code %d\n", status)
 
 	body, err := ioutil.ReadAll(resp.Body)
 	check("responseRead", err)
@@ -66,7 +66,7 @@ func createIndex() {
 	status, respBody := request(http.MethodPost, "index", jsonBody)
 
 	if status == 200 {
-		log.Printf("index: %s was succsefully created", defaultIndex)
+		log.Printf("index: %s was successfully created", defaultIndex)
 	} else {
 		log.Printf("status: something went wrong got status code %d", status)
 	}
@@ -167,7 +167,7 @@ func dataExtract(path string) map[string]string {
 func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	fullPath := filepath.Join(mainDir, childPath)
 	if err != nil {
-		log.Printf("file: the following erro ocurred while attempting to read file %s - %s", fullPath, err)
+		log.Printf("file: the following error occurred while attempting to read file %s - %s", fullPath, err)
 		return fs.SkipDir
 	}
 
@@ -176,7 +176,7 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 		jsonPayLoad, _ := json.Marshal(fields)
 		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
 		if status == 200 {
-			log.Printf("client: succsefull response with status code %d", status)
+			log.Printf("client: successful response with status code %d", status)
 			log.Printf("client: response body %s", respBody)
 		}
 	}
