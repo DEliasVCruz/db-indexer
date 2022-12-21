@@ -174,4 +174,6 @@ func fileIndexing(childPath string, dir fs.DirEntry, err error) error {
 
 func main() {
 	createIndex()
+	fsys := os.DirFS(mainDir)
+	fs.WalkDir(fsys, ".", fileIndexing)
 }
