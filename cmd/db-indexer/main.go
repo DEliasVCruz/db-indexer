@@ -95,6 +95,10 @@ var data string
 
 var mainDir = "enron_mail_20110402/maildir"
 
+var fieldRegex, _ = regexp.Compile(`^([\w\-]*): (.*)`)
+var brokenLineRegex, _ = regexp.Compile(`^\s*(.*)\s*$`)
+var messageRegex, _ = regexp.Compile(`^<(\d+\.\d+)\..*`)
+
 func dataExtract(path string) map[string]string {
 	log.Printf("file: reading file path %s", path)
 	input, err := os.Open(path)
@@ -123,14 +127,11 @@ func dataExtract(path string) map[string]string {
 		"contents":                  "",
 	}
 
-	scanner := bufio.NewScanner(input)
-
-	fieldRegex, _ := regexp.Compile(`^([\w\-]*): (.*)`)
-	brokenLineRegex, _ := regexp.Compile(`^\s*(.*)\s*$`)
-	messageRegex, _ := regexp.Compile(`^<(\d+\.\d+)\..*`)
 	metadataInfo := true
+	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
 		line := scanner.Text()
+		log.Printf("data: reading line - %s\n", line)
 		if metadataInfo {
 			if strings.TrimSpace(line) == "" {
 				metadataInfo = false
