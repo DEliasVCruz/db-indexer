@@ -145,6 +145,16 @@ func dataExtract(path string) (map[string]string, error) {
 
 }
 
+func createDoc(payLoad map[string]string) {
+	jsonPayLoad, _ := json.Marshal(payLoad)
+	status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
+	if status == 200 {
+		log.Printf("client: successful response with status %d and body %s", status, respBody)
+	} else {
+		log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
+	}
+}
+
 func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 	fullPath := filepath.Join(mainDir, childPath)
 	if err != nil {
@@ -158,14 +168,7 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 			log.Printf("error: %s", err)
 			return nil
 		}
-
-		jsonPayLoad, _ := json.Marshal(fields)
-		status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
-		if status == 200 {
-			log.Printf("client: successful response with status %d and body %s", status, respBody)
-		} else {
-			log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
-		}
+		createDoc(fields)
 	}
 
 	return nil
