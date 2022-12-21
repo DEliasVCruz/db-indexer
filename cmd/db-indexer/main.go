@@ -90,7 +90,7 @@ func check(check string, err error) {
 var field string
 var data string
 
-var mainDir = "enron_mail_20110402/maildir"
+var mainDir = filepath.Join(os.Args[1], "maildir")
 
 var fieldRegex, _ = regexp.Compile(`^([\w\-]*): (.*)`)
 var brokenLineRegex, _ = regexp.Compile(`^\s*(.*)\s*$`)
