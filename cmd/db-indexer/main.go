@@ -184,7 +184,7 @@ func fsWalker(childPath string, dir fs.DirEntry, err error) error {
 		records = append(records, fields)
 	}
 
-	if len(records) == 2 {
+	if len(records) == 100 {
 		createDocBatch(records)
 		records = nil
 	}
