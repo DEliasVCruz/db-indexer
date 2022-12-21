@@ -150,8 +150,10 @@ func dataExtract(path string) map[string]string {
 
 	fields["message_id"] = regexMessage.FindStringSubmatch(fields["message_id"])[1]
 	contentTypes := strings.Split(fields["content_type"], ";")
-	fields["content_type"] = contentTypes[0]
-	fields["charset"] = strings.Split(contentTypes[1], "=")[1]
+	if len(contentTypes) > 1 {
+		fields["content_type"] = contentTypes[0]
+		fields["charset"] = strings.Split(contentTypes[1], "=")[1]
+	}
 	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], "\\", "/")
 
 	return fields
