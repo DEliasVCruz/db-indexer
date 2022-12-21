@@ -3,45 +3,15 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
-
-const defaultIndex = "emails"
-
-func createIndex() {
-	status, _ := request(http.MethodHead, fmt.Sprintf("index/%s", defaultIndex), nil)
-	if status == 200 {
-		log.Printf("index: %s index already exists", defaultIndex)
-		status, _ := request(http.MethodDelete, fmt.Sprintf("index/%s", defaultIndex), nil)
-		if status == 200 {
-			log.Printf("index: %s index was deleted", defaultIndex)
-		} else {
-			log.Fatalf("index: something went wrong trying to delete index %s", defaultIndex)
-		}
-	} else {
-		log.Printf("index: the %s index does not exist", defaultIndex)
-	}
-	jsonBody, err := os.ReadFile("./index.json")
-	check("fileOpen", err)
-
-	status, respBody := request(http.MethodPost, "index", jsonBody)
-
-	if status == 200 {
-		log.Printf("index: %s index was successfully created", defaultIndex)
-	} else {
-		log.Fatalf("status: something went wrong got status code %d", status)
-	}
-	log.Printf("client: response body %s\n", respBody)
-}
 
 var mainDir = filepath.Join(os.Args[1], "maildir")
 
@@ -94,28 +64,6 @@ func dataExtract(path string) (map[string]string, error) {
 
 	return fields, nil
 
-}
-
-func createDocBatch(payLoad []map[string]string) {
-	jsonSlice, _ := json.Marshal(payLoad)
-	jsonPayLoad := []byte(fmt.Sprintf(`{ "index": "%s", "records": %s }`, defaultIndex, jsonSlice))
-	status, respBody := request(http.MethodPost, "_bulkv2", jsonPayLoad)
-	if status == 200 {
-		log.Printf("client: successful response with status %d and body %s", status, respBody)
-	} else {
-		log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
-	}
-
-}
-
-func createDoc(payLoad map[string]string) {
-	jsonPayLoad, _ := json.Marshal(payLoad)
-	status, respBody := request(http.MethodPost, fmt.Sprintf("%s/_doc", defaultIndex), jsonPayLoad)
-	if status == 200 {
-		log.Printf("client: successful response with status %d and body %s", status, respBody)
-	} else {
-		log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
-	}
 }
 
 func mailDirIndex(mailDir fs.FS, rootPath string) {
