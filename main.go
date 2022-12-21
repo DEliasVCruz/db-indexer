@@ -7,43 +7,15 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 )
 
-const serverPort = 4080
 const defaultIndex = "emails"
-
-var client = http.Client{
-	Timeout: 30 * time.Second,
-}
-
-func request(method, endPoint string, payLoad []byte) (int, []byte) {
-	bodyReader := bytes.NewReader(payLoad)
-	requestURL := fmt.Sprintf("http://localhost:%d/api/%s", serverPort, endPoint)
-
-	req, err := http.NewRequest(method, requestURL, bodyReader)
-	check("requestCreation", err)
-
-	req.SetBasicAuth("test_admin", "test_password")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36")
-
-	resp, err := client.Do(req)
-	check("requestAction", err)
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	check("responseRead", err)
-
-	return resp.StatusCode, body
-}
 
 func createIndex() {
 	status, _ := request(http.MethodHead, fmt.Sprintf("index/%s", defaultIndex), nil)
