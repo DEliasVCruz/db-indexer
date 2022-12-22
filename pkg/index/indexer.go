@@ -38,7 +38,7 @@ func (i Indexer) indexDirFiles(directory fs.FS) {
 				log.Printf("error: %s", err)
 				return nil
 			}
-			records = append(records, fields)
+			records = append(records, data.Process(fields))
 		}
 
 		if len(records) == 100 {
