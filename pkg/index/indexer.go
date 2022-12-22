@@ -17,7 +17,13 @@ type Indexer struct {
 }
 
 func (i Indexer) Index() {
-	zinc.CreateIndex(i.Name, i.Config)
+	if zinc.ExistsIndex(i.Name) == 200 {
+		log.Printf("index: %s index already exists", i.Name)
+	} else {
+		log.Printf("index: the %s index does not exist", i.Name)
+		zinc.CreateIndex(i.Name, i.Config)
+	}
+
 	i.indexDirFiles(os.DirFS(i.DataFolder))
 }
 
