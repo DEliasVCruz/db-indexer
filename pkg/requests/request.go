@@ -17,22 +17,22 @@ type Request struct {
 }
 
 func (r Request) Get(endpoint string, payLoad []byte) (int, []byte) {
-	return baseRequest(r.HttpClient, http.MethodGet, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
+	return r.baseRequest(r.HttpClient, http.MethodGet, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
 }
 
 func (r Request) Post(endpoint string, payLoad []byte) (int, []byte) {
-	return baseRequest(r.HttpClient, http.MethodPost, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
+	return r.baseRequest(r.HttpClient, http.MethodPost, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
 }
 
 func (r Request) Head(endpoint string, payLoad []byte) (int, []byte) {
-	return baseRequest(r.HttpClient, http.MethodHead, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
+	return r.baseRequest(r.HttpClient, http.MethodHead, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
 }
 
 func (r Request) Delete(endpoint string, payLoad []byte) (int, []byte) {
-	return baseRequest(r.HttpClient, http.MethodDelete, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
+	return r.baseRequest(r.HttpClient, http.MethodDelete, fmt.Sprintf("%s:%d/%s", r.BaseUrl, r.ServerPort, endpoint), r.Headers, payLoad)
 }
 
-func baseRequest(client http.Client, method, url string, headers map[string]string, payLoad []byte) (int, []byte) {
+func (r Request) baseRequest(client http.Client, method, url string, headers map[string]string, payLoad []byte) (int, []byte) {
 	req, err := http.NewRequest(method, url, bytes.NewReader(payLoad))
 	check.Error("requestCreation", err)
 
