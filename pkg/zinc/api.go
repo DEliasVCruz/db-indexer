@@ -23,13 +23,11 @@ var request = requests.Request{
 	Retries: 3,
 }
 
-func ExistsIndex(index string) {
-	status, _ := request.Get(fmt.Sprintf("api/index/%s", index), nil)
-	if status == 200 {
-		log.Printf("index: %s index already exists", index)
-	} else {
-		log.Printf("index: the %s index does not exist", index)
-	}
+func ExistsIndex(index string) int {
+	status, body := request.Get(fmt.Sprintf("api/index/%s", index), nil)
+	log.Printf("client: response with status %d and body %s\n", status, body)
+
+	return status
 }
 
 func CreateIndex(index string, config []byte) {
