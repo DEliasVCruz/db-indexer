@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/requests"
 )
 
@@ -25,23 +23,17 @@ var request = requests.Request{
 	Retries: 3,
 }
 
-func CreateIndex(index string) {
+func ExistsIndex(index string) {
 	status, _ := request.Get(fmt.Sprintf("api/index/%s", index), nil)
 	if status == 200 {
 		log.Printf("index: %s index already exists", index)
-		status, _ := request.Delete(fmt.Sprintf("api/index/%s", index), nil)
-		if status == 200 {
-			log.Printf("index: %s index was deleted", index)
-		} else {
-			log.Fatalf("index: something went wrong trying to delete index %s", index)
-		}
 	} else {
 		log.Printf("index: the %s index does not exist", index)
 	}
-	jsonBody, err := os.ReadFile("./index.json")
-	check.Error("fileOpen", err)
+}
 
-	status, respBody := request.Post("api/index", jsonBody)
+func CreateIndex(index string, config []byte) {
+	status, respBody := request.Post("api/index", config)
 
 	if status == 200 {
 		log.Printf("index: %s index was successfully created", index)
@@ -49,6 +41,15 @@ func CreateIndex(index string) {
 		log.Fatalf("status: something went wrong got status code %d", status)
 	}
 	log.Printf("client: response body %s\n", respBody)
+}
+
+func DeleteIndex(index string) {
+	status, _ := request.Delete(fmt.Sprintf("api/index/%s", index), nil)
+	if status == 200 {
+		log.Printf("index: %s index was deleted", index)
+	} else {
+		log.Fatalf("index: something went wrong trying to delete index %s", index)
+	}
 }
 
 func CreateDoc(index string, payLoad map[string]string) {

@@ -13,10 +13,11 @@ import (
 type Indexer struct {
 	Name       string
 	DataFolder string
+	Config     []byte
 }
 
 func (i Indexer) Index() {
-	zinc.CreateIndex(i.Name)
+	zinc.CreateIndex(i.Name, i.Config)
 	i.indexDirFiles(os.DirFS(i.DataFolder))
 }
 
