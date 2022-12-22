@@ -31,18 +31,19 @@ func ExistsIndex(index string) int {
 }
 
 func CreateIndex(index string, config []byte) {
-	status, respBody := request.Post("api/index", config)
+	status, body := request.Post("api/index", config)
+	log.Printf("client: response with status %d and body %s\n", status, body)
 
 	if status == 200 {
 		log.Printf("index: %s index was successfully created", index)
 	} else {
 		log.Fatalf("status: something went wrong got status code %d", status)
 	}
-	log.Printf("client: response body %s\n", respBody)
 }
 
 func DeleteIndex(index string) {
-	status, _ := request.Delete(fmt.Sprintf("api/index/%s", index), nil)
+	status, body := request.Delete(fmt.Sprintf("api/index/%s", index), nil)
+	log.Printf("client: response with status %d and body %s\n", status, body)
 	if status == 200 {
 		log.Printf("index: %s index was deleted", index)
 	} else {
@@ -52,22 +53,24 @@ func DeleteIndex(index string) {
 
 func CreateDoc(index string, payLoad map[string]string) {
 	jsonPayLoad, _ := json.Marshal(payLoad)
-	status, respBody := request.Post(fmt.Sprintf("api/%s/_doc", index), jsonPayLoad)
+	status, body := request.Post(fmt.Sprintf("api/%s/_doc", index), jsonPayLoad)
+	log.Printf("client: response with status %d and body %s\n", status, body)
 	if status == 200 {
-		log.Printf("client: successful response with status %d and body %s", status, respBody)
+		log.Printf("client: successful response with status %d and body %s", status, body)
 	} else {
-		log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
+		log.Fatalf("client: could not index file with status %d and body %s", status, body)
 	}
 }
 
 func CreateDocBatch(index string, payLoad []map[string]string) {
 	jsonSlice, _ := json.Marshal(payLoad)
 	jsonPayLoad := []byte(fmt.Sprintf(`{ "index": "%s", "records": %s }`, index, jsonSlice))
-	status, respBody := request.Post("api/_bulkv2", jsonPayLoad)
+	status, body := request.Post("api/_bulkv2", jsonPayLoad)
+	log.Printf("client: response with status %d and body %s\n", status, body)
 	if status == 200 {
-		log.Printf("client: successful response with status %d and body %s", status, respBody)
+		log.Printf("client: successful response with status %d and body %s", status, body)
 	} else {
-		log.Fatalf("client: could not index file with status %d and body %s", status, respBody)
+		log.Fatalf("client: could not index file with status %d and body %s", status, body)
 	}
 
 }
