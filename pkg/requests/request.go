@@ -14,6 +14,7 @@ type Request struct {
 	ServerPort int
 	HttpClient http.Client
 	Headers    map[string]string
+	Retries    int
 }
 
 func (r Request) Get(endpoint string, payLoad []byte) (int, []byte) {
@@ -41,7 +42,15 @@ func (r Request) baseRequest(client http.Client, method, url string, headers map
 	}
 
 	resp, err := client.Do(req)
-	check.Error("requestAction", err)
+	if err != nil {
+		for i := 0; i < r.Retries; i++ {
+			resp, err = client.Do(req)
+			if err == nil {
+				break
+			}
+		}
+		check.Error("requestAction", err)
+	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
