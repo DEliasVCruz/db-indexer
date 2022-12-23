@@ -29,7 +29,7 @@ func (i Indexer) Index() {
 
 func (i Indexer) indexDirFiles(directory fs.FS) {
 
-	var records = []map[string]string{}
+	var records = []map[string][]byte{}
 
 	fs.WalkDir(directory, ".", func(childPath string, dir fs.DirEntry, err error) error {
 

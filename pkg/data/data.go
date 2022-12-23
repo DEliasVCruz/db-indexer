@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strings"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 )
@@ -17,13 +16,13 @@ var fieldRegex, _ = regexp.Compile(`^([\w\-]*): (.*)`)
 var brokenLineRegex, _ = regexp.Compile(`^\s*(.*)\s*$`)
 var messageRegex, _ = regexp.Compile(`^<(\d+\.\d+)\..*`)
 
-func Extract(path string) (map[string]string, error) {
+func Extract(path string) (map[string][]byte, error) {
 	log.Printf("file: reading file path %s", path)
 	input, err := os.Open(path)
 	check.Error("fileOpen", err)
 	defer input.Close()
 
-	fields := map[string]string{}
+	fields := map[string][]byte{}
 	field := []byte("")
 
 	allMetadataParsed := false
@@ -33,15 +32,16 @@ func Extract(path string) (map[string]string, error) {
 		if !allMetadataParsed {
 			if bytes.Equal(field, []byte("x_filename")) {
 				allMetadataParsed = true
-			} else if fieldRegex.Match(line) {
-				match := fieldRegex.FindSubmatch(line)
+			} else if match := fieldRegex.FindSubmatch(line); match != nil {
 				field = bytes.ReplaceAll(bytes.ToLower(match[1]), []byte("-"), []byte("_"))
-				fields[string(field)] = string(bytes.TrimSpace(match[2]))
+				fields[string(field)] = bytes.TrimSpace(match[2])
 			} else {
-				fields[string(field)] += fmt.Sprintf(" %s", bytes.TrimSpace(brokenLineRegex.FindSubmatch(line)[1]))
+				byteData := [][]byte{fields[string(field)], bytes.TrimSpace(brokenLineRegex.FindSubmatch(line)[1])}
+				fields[string(field)] = bytes.Join(byteData, []byte(" "))
 			}
 		} else {
-			fields["contents"] += fmt.Sprintf("%s\n", line)
+			byteData := [][]byte{fields["contents"], line, []byte("\n")}
+			fields["contents"] = bytes.Join(byteData, []byte(""))
 		}
 	}
 
@@ -52,17 +52,17 @@ func Extract(path string) (map[string]string, error) {
 	return fields, nil
 }
 
-func Process(fields map[string]string) map[string]string {
-	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
+func Process(fields map[string][]byte) map[string][]byte {
+	messageId := messageRegex.FindSubmatch(fields["message_id"])
 	if messageId != nil {
 		fields["message_id"] = messageId[1]
 	}
-	contentTypes := strings.Split(fields["content_type"], ";")
+	contentTypes := bytes.Split(fields["content_type"], []byte(";"))
 	if len(contentTypes) > 1 {
 		fields["content_type"] = contentTypes[0]
-		fields["charset"] = strings.Split(contentTypes[1], "=")[1]
+		fields["charset"] = bytes.Split(contentTypes[1], []byte("="))[1]
 	}
-	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], "\\", "/")
+	fields["x_folder"] = bytes.ReplaceAll(fields["x_folder"], []byte("\\"), []byte("/"))
 
 	return fields
 }

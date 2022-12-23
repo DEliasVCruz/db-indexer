@@ -62,10 +62,11 @@ func CreateDoc(index string, payLoad map[string]string) {
 	}
 }
 
-func CreateDocBatch(index string, payLoad []map[string]string) {
+func CreateDocBatch(index string, payLoad []map[string][]byte) {
 	jsonSlice, _ := json.Marshal(payLoad)
 	jsonPayLoad := []byte(fmt.Sprintf(`{ "index": "%s", "records": %s }`, index, jsonSlice))
 	status, body := request.Post("api/_bulkv2", jsonPayLoad)
+	// This is repeating the message
 	log.Printf("client: response with status %d and body %s\n", status, body)
 	if status == 200 {
 		log.Printf("client: successful response with status %d and body %s", status, body)
