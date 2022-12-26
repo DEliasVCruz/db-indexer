@@ -34,6 +34,8 @@ func (i Indexer) Index() {
 	records := make(chan map[string]string)
 	dataExtracts := make(chan map[string]string)
 
+	i.wg = &sync.WaitGroup{}
+
 	i.wg.Add(1)
 	go i.findFiles(os.DirFS(i.DataFolder), files)
 
