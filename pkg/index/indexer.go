@@ -24,10 +24,16 @@ func (i Indexer) Index() {
 		zinc.CreateIndex(i.Name, i.Config)
 	}
 
-	i.indexDirFiles(os.DirFS(i.DataFolder))
+	files := make(chan string)
+
+	i.findFiles(os.DirFS(i.DataFolder))
+
+	for file := range files {
+
+	}
 }
 
-func (i Indexer) indexDirFiles(directory fs.FS) {
+func (i Indexer) findFiles(directory fs.FS) {
 
 	var records []map[string]string
 
