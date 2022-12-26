@@ -9,14 +9,14 @@ func TestExtrac(t *testing.T) {
 
 	path := "../../test/fixtures/normal_extract_data"
 
-	want := map[string]string{
-		"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
-		"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
-		"from":       "phillip.allen@enron.com",
-		"to":         "david.delainey@enron.com",
-		"subject":    "Hello World",
-		"x_filename": "don baughman 6-25-02.PST",
-		"contents":   "Some content\n\nWith some new lines\n\n",
+	want := map[string][]byte{
+		"message_id": []byte("<5860470.1075855667730.JavaMail.evans@thyme>"),
+		"date":       []byte("Thu, 5 Oct 2000 06:26:00 -0700 (PDT)"),
+		"from":       []byte("phillip.allen@enron.com"),
+		"to":         []byte("david.delainey@enron.com"),
+		"subject":    []byte("Hello World"),
+		"x_filename": []byte("don baughman 6-25-02.PST"),
+		"contents":   []byte("Some content\n\nWith some new lines\n\n"),
 	}
 	got, err := Extract(path)
 
@@ -46,13 +46,13 @@ func TestExtractMultiNewLineField(t *testing.T) {
 
 	path := "../../test/fixtures/multi_new_line_field"
 
-	want := map[string]string{
-		"message_id": "<15722007.1075840335489.JavaMail.evans@thyme>",
-		"date":       "Thu, 13 Dec 2001 06:39:18 -0800 (PST)",
-		"from":       "don.baughman@enron.com",
-		"subject":    "Call Laddie for house party: Mom &dad & Mary   Janice Nieghbour",
-		"x_filename": "don baughman 6-25-02.PST",
-		"contents":   "Content\n",
+	want := map[string][]byte{
+		"message_id": []byte("<15722007.1075840335489.JavaMail.evans@thyme>"),
+		"date":       []byte("Thu, 13 Dec 2001 06:39:18 -0800 (PST)"),
+		"from":       []byte("don.baughman@enron.com"),
+		"subject":    []byte("Call Laddie for house party: Mom &dad & Mary   Janice Nieghbour"),
+		"x_filename": []byte("don baughman 6-25-02.PST"),
+		"contents":   []byte("Content\n"),
 	}
 	got, err := Extract(path)
 
@@ -70,14 +70,14 @@ func TestExtractMultiLineField(t *testing.T) {
 
 	path := "../../test/fixtures/multi_line_field"
 
-	want := map[string]string{
-		"message_id": "<33534862.1075863219076.JavaMail.evans@thyme>",
-		"date":       "Mon, 26 Nov 2001 12:27:12 -0800 (PST)",
-		"from":       "craig.breslau@enron.com",
-		"to":         "susan.bailey@enron.com, credit <.williams@enron.com>, legal <.taylor@enron.com>",
-		"subject":    "FW: assignment",
-		"x_filename": "SBAILE2 (Non-Privileged).pst",
-		"contents":   "\nContent\n\n Some more content\n",
+	want := map[string][]byte{
+		"message_id": []byte("<33534862.1075863219076.JavaMail.evans@thyme>"),
+		"date":       []byte("Mon, 26 Nov 2001 12:27:12 -0800 (PST)"),
+		"from":       []byte("craig.breslau@enron.com"),
+		"to":         []byte("susan.bailey@enron.com, credit <.williams@enron.com>, legal <.taylor@enron.com>"),
+		"subject":    []byte("FW: assignment"),
+		"x_filename": []byte("SBAILE2 (Non-Privileged).pst"),
+		"contents":   []byte("\nContent\n\n Some more content\n"),
 	}
 	got, err := Extract(path)
 
@@ -93,17 +93,17 @@ func TestExtractMultiLineField(t *testing.T) {
 
 func TestProcess(t *testing.T) {
 
-	processFields := map[string]string{
-		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
-		"content_type": "text/plain; charset=us-ascii",
-		"x_folder":     `\ExMerge - Baughman Jr., Don\Deleted Items`,
+	processFields := map[string][]byte{
+		"message_id":   []byte("<15722007.1075840335489.JavaMail.evans@thyme>"),
+		"content_type": []byte("text/plain; charset=us-ascii"),
+		"x_folder":     []byte(`\ExMerge - Baughman Jr., Don\Deleted Items`),
 	}
 
-	want := map[string]string{
-		"message_id":   "15722007.1075840335489",
-		"content_type": "text/plain",
-		"charset":      "us-ascii",
-		"x_folder":     `/ExMerge - Baughman Jr., Don/Deleted Items`,
+	want := map[string][]byte{
+		"message_id":   []byte("15722007.1075840335489"),
+		"content_type": []byte("text/plain"),
+		"charset":      []byte("us-ascii"),
+		"x_folder":     []byte(`/ExMerge - Baughman Jr., Don/Deleted Items`),
 	}
 
 	got := Process(processFields)
@@ -124,10 +124,10 @@ func BenchmarkExtract(b *testing.B) {
 
 func BenchmarkProcess(b *testing.B) {
 
-	processFields := map[string]string{
-		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
-		"content_type": "text/plain; charset=us-ascii",
-		"x_folder":     `\ExMerge - Baughman Jr., Don\Deleted Items`,
+	processFields := map[string][]byte{
+		"message_id":   []byte("<15722007.1075840335489.JavaMail.evans@thyme>"),
+		"content_type": []byte("text/plain; charset=us-ascii"),
+		"x_folder":     []byte(`\ExMerge - Baughman Jr., Don\Deleted Items`),
 	}
 
 	for i := 0; i < b.N; i++ {
