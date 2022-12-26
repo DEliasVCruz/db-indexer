@@ -2,12 +2,12 @@ package data
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 )
@@ -16,38 +16,33 @@ var fieldRegex, _ = regexp.Compile(`^([\w\-]*):\s*(.*)`)
 var brokenLineRegex, _ = regexp.Compile(`^\s*(.*)\s*$`)
 var messageRegex, _ = regexp.Compile(`^<(\d+\.\d+)\..*`)
 
-var fieldBreakBefore, fieldBreakAfter = []byte("-"), []byte("_")
-var fieldMetadataFlag, emptyByte = []byte("x_filename"), []byte("")
-var dataJoin, dataNewLine = []byte(" "), []byte("\n")
-var contentTypeSep, charsetSep = []byte(";"), []byte("=")
-var oldPathSep, newPathSep = []byte(`\`), []byte("/")
+var fieldMetadataFlag = "x_filename"
+var specialChars = [8]string{"-", "_", " ", "\n", ";", "=", `\`, "/"}
 
-func Extract(path string) (map[string][]byte, error) {
+func Extract(path string) (map[string]string, error) {
 	log.Printf("file: reading file path %s", path)
 	input, err := os.Open(path)
 	check.Error("fileOpen", err)
 	defer input.Close()
 
-	fields := make(map[string][]byte)
-	var field []byte
+	fields := make(map[string]string)
+	var field string
 
 	allMetadataParsed := false
 	scanner := bufio.NewScanner(input)
 	for scanner.Scan() {
-		line := scanner.Bytes()
+		line := scanner.Text()
 		if !allMetadataParsed {
-			if bytes.Equal(field, fieldMetadataFlag) {
+			if field == fieldMetadataFlag {
 				allMetadataParsed = true
-			} else if match := fieldRegex.FindSubmatch(line); match != nil {
-				field = bytes.ReplaceAll(bytes.ToLower(match[1]), fieldBreakBefore, fieldBreakAfter)
-				fields[string(field)] = bytes.TrimSpace(match[2])
+			} else if match := fieldRegex.FindStringSubmatch(line); match != nil {
+				field = strings.ReplaceAll(strings.ToLower(match[1]), specialChars[0], specialChars[1])
+				fields[string(field)] = strings.TrimSpace(match[2])
 			} else {
-				byteData := [][]byte{fields[string(field)], bytes.TrimSpace(brokenLineRegex.FindSubmatch(line)[1])}
-				fields[string(field)] = bytes.Join(byteData, dataJoin)
+				fields[field] += specialChars[2] + strings.TrimSpace(brokenLineRegex.FindStringSubmatch(line)[1])
 			}
 		} else {
-			byteData := [][]byte{fields["contents"], line, dataNewLine}
-			fields["contents"] = bytes.Join(byteData, emptyByte)
+			fields["contents"] += line + specialChars[3]
 		}
 	}
 
@@ -58,17 +53,17 @@ func Extract(path string) (map[string][]byte, error) {
 	return fields, nil
 }
 
-func Process(fields map[string][]byte) map[string][]byte {
-	messageId := messageRegex.FindSubmatch(fields["message_id"])
+func Process(fields map[string]string) map[string]string {
+	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
 	if messageId != nil {
 		fields["message_id"] = messageId[1]
 	}
-	contentTypes := bytes.Split(fields["content_type"], contentTypeSep)
+	contentTypes := strings.Split(fields["content_type"], specialChars[4])
 	if len(contentTypes) > 1 {
 		fields["content_type"] = contentTypes[0]
-		fields["charset"] = bytes.Split(contentTypes[1], charsetSep)[1]
+		fields["charset"] = strings.Split(contentTypes[1], specialChars[5])[1]
 	}
-	fields["x_folder"] = bytes.ReplaceAll(fields["x_folder"], oldPathSep, newPathSep)
+	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], specialChars[6], specialChars[7])
 
 	return fields
 }
