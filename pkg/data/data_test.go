@@ -130,6 +130,7 @@ func BenchmarkProcess(b *testing.B) {
 		"x_folder":     []byte(`\ExMerge - Baughman Jr., Don\Deleted Items`),
 	}
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		Process(processFields)
 	}
