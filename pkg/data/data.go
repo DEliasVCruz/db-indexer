@@ -12,7 +12,7 @@ import (
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 )
 
-var fieldRegex, _ = regexp.Compile(`^([\w\-]*): (.*)`)
+var fieldRegex, _ = regexp.Compile(`^([\w\-]*):\s*(.*)`)
 var brokenLineRegex, _ = regexp.Compile(`^\s*(.*)\s*$`)
 var messageRegex, _ = regexp.Compile(`^<(\d+\.\d+)\..*`)
 
