@@ -30,6 +30,31 @@ func TestExtrac(t *testing.T) {
 
 }
 
+func TestExtractWithCompletelyEmptyField(t *testing.T) {
+
+	path := "../../test/fixtures/empty_field_data"
+
+	want := map[string]string{
+		"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
+		"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
+		"from":       "phillip.allen@enron.com",
+		"to":         "david.delainey@enron.com",
+		"subject":    "",
+		"x_filename": "don baughman 6-25-02.PST",
+		"contents":   "Some content\n",
+	}
+	got, err := Extract(path)
+
+	if err != nil {
+		t.Fatalf("unexpected error opening test store: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Error("got ", got, " wanted ", want)
+	}
+
+}
+
 func TestExtractMissingMetadataError(t *testing.T) {
 
 	path := "../../test/fixtures/missing_metadata"
