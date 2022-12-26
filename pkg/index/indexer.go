@@ -92,12 +92,12 @@ func (i Indexer) processData(readCh <-chan map[string]string, writeCh chan<- map
 func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 	for record := range readCh {
 		i.wg.Add(1)
-		if i.recordCount == 99 {
-			zinc.CreateDocBatch(i.Name, i.records[:])
-			i.recordCount = 0
+		if i.recordIdx < 100 {
+			i.records[i.recordIdx] = record
+			i.recordIdx += 1
 		} else {
-			i.records[i.recordCount] = record
-			i.recordCount++
+			zinc.CreateDocBatch(i.Name, i.records[:i.recordIdx])
+			i.recordIdx = 0
 		}
 		i.wg.Done()
 	}
