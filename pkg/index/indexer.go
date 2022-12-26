@@ -13,12 +13,13 @@ import (
 )
 
 type Indexer struct {
-	Name        string
-	DataFolder  string
-	Config      []byte
-	wg          *sync.WaitGroup
-	records     [100]map[string]string
-	recordCount int
+	Name       string
+	DataFolder string
+	Config     []byte
+	wg         *sync.WaitGroup
+	records    [100]map[string]string
+	recordIdx  int
+	filesCount int
 }
 
 func (i Indexer) Index() {
