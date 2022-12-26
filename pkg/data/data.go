@@ -2,14 +2,14 @@ package data
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
+	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
 var fieldRegex, _ = regexp.Compile(`^([\w\-]*):\s*(.*)`)
@@ -19,8 +19,11 @@ var messageRegex, _ = regexp.Compile(`^<(\d+\.\d+)\..*`)
 var fieldMetadataFlag = "x_filename"
 var specialChars = [8]string{"-", "_", " ", "\n", ";", "=", `\`, "/"}
 
-func Extract(path string) (map[string]string, error) {
-	log.Printf("file: reading file path %s", path)
+func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	zinc.LogInfo(fmt.Sprintf("extracting data from file path %s", path))
+
 	input, err := os.Open(path)
 	check.Error("fileOpen", err)
 	defer input.Close()
@@ -46,14 +49,17 @@ func Extract(path string) (map[string]string, error) {
 		}
 	}
 
-	if !allMetadataParsed {
-		return fields, errors.New(fmt.Sprintf("broken metadata at %s aborting indexing", path))
+	if allMetadataParsed {
+		ch <- fields
+		return
 	}
 
-	return fields, nil
+	zinc.LogError(fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
 }
 
-func Process(fields map[string]string) map[string]string {
+func Process(fields map[string]string, ch chan<- map[string]string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
 	if messageId != nil {
 		fields["message_id"] = messageId[1]
@@ -65,5 +71,5 @@ func Process(fields map[string]string) map[string]string {
 	}
 	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], specialChars[6], specialChars[7])
 
-	return fields
+	ch <- fields
 }
