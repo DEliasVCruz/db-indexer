@@ -37,11 +37,12 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		if !allMetadataParsed {
-			if field == fieldMetadataFlag {
-				allMetadataParsed = true
-			} else if match := fieldRegex.FindStringSubmatch(line); match != nil {
+			if match := fieldRegex.FindStringSubmatch(line); match != nil {
 				field = strings.ReplaceAll(strings.ToLower(match[1]), specialChars[0], specialChars[1])
-				fields[string(field)] = strings.TrimSpace(match[2])
+				fields[field] = strings.TrimSpace(match[2])
+				if field == fieldMetadataFlag {
+					allMetadataParsed = true
+				}
 			} else {
 				fields[field] += specialChars[2] + strings.TrimSpace(brokenLineRegex.FindStringSubmatch(line)[1])
 			}
