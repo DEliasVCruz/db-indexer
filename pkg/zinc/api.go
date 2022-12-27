@@ -45,13 +45,16 @@ func DeleteIndex(index string) {
 	}
 }
 
-func CreateDoc(index string, payLoad map[string]string) {
+func CreateDoc(index string, payLoad map[string]string) int {
 	jsonPayLoad, _ := json.Marshal(payLoad)
 	status, body := request.Post(fmt.Sprintf("api/%s/_doc", index), jsonPayLoad)
 
 	if status != 200 {
-		log.Fatalf("client: could not index file with status %d and body %s", status, body)
+		log.Printf("client: could not index file %s with status %d", payLoad["file_path"], status)
+		LogError("appLogs", fmt.Sprintf("could not index file %s", payLoad["file_path"]), string(body))
+		return status
 	}
+	return status
 }
 
 func CreateDocBatch(index string, payLoad []map[string]string, wg *sync.WaitGroup) {
