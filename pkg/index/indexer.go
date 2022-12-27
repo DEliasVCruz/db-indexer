@@ -55,12 +55,13 @@ func (i Indexer) findFiles(directory fs.FS, ch chan<- string) {
 
 		fullPath := filepath.Join(i.DataFolder, childPath)
 		if err != nil {
-			zinc.LogError(fmt.Sprintf("failed to read path %s", fullPath), err.Error())
+			zinc.LogError("appLogs", fmt.Sprintf("failed to read path %s", fullPath), err.Error())
 			return nil
 		}
 
 		if !dir.IsDir() {
 			ch <- fullPath
+			zinc.LogInfo("appLogs", fmt.Sprintf("processing path %s", fullPath))
 		}
 
 		return nil

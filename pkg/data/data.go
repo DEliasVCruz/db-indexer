@@ -22,8 +22,6 @@ var specialChars = [8]string{"-", "_", " ", "\n", ";", "=", `\`, "/"}
 func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	zinc.LogInfo(fmt.Sprintf("extracting data from file path %s", path))
-
 	input, err := os.Open(path)
 	check.Error("fileOpen", err)
 	defer input.Close()
@@ -51,10 +49,11 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 
 	if allMetadataParsed {
 		ch <- fields
+		zinc.LogInfo("appLogs", fmt.Sprintf("extrated data from path %s", path))
 		return
 	}
 
-	zinc.LogError(fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
+	zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
 }
 
 func Process(fields map[string]string, ch chan<- map[string]string, wg *sync.WaitGroup) {
