@@ -57,6 +57,16 @@ func CreateDoc(index string, payLoad map[string]string) int {
 	return status
 }
 
+func DeleteDoc(index, id string) {
+	status, _ := request.Delete(fmt.Sprintf("api/%s/_doc/%s", index, id), nil)
+
+	if status == 200 {
+		log.Printf("client: deleted doc with id %s", id)
+		LogInfo("appLogs", fmt.Sprintf("deleted doc with id %s", id))
+	}
+
+}
+
 func CreateDocBatch(index string, payLoad []map[string]string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
