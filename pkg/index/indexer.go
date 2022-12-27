@@ -109,7 +109,9 @@ func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 		} else {
 			recordsSlice := make([]map[string]string, 100)
 			copy(recordsSlice, records[:])
-			zinc.CreateDocBatch(i.Name, recordsSlice)
+
+			i.wg.Add(1)
+			go zinc.CreateDocBatch(i.Name, recordsSlice, i.wg)
 
 			recordIdx = 0
 			records[recordIdx] = record
@@ -121,7 +123,9 @@ func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 	if recordIdx != 0 {
 		recordsSlice := make([]map[string]string, recordIdx)
 		copy(recordsSlice, records[:recordIdx])
-		zinc.CreateDocBatch(i.Name, recordsSlice)
+
+		i.wg.Add(1)
+		go zinc.CreateDocBatch(i.Name, recordsSlice, i.wg)
 	}
 
 }

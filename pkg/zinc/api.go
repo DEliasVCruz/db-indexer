@@ -54,7 +54,9 @@ func CreateDoc(index string, payLoad map[string]string) {
 	}
 }
 
-func CreateDocBatch(index string, payLoad []map[string]string) {
+func CreateDocBatch(index string, payLoad []map[string]string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	jsonSlice, _ := json.Marshal(payLoad)
 	jsonPayLoad := []byte(fmt.Sprintf(`{ "index": "%s", "records": %s }`, index, jsonSlice))
 	status, body := request.Post("api/_bulkv2", jsonPayLoad)
