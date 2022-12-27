@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/requests"
@@ -79,10 +80,21 @@ func CreateDocBatch(index string, payLoad []map[string]string, wg *sync.WaitGrou
 
 	if status == 200 {
 		log.Printf("client: %s", body)
-	} else {
-		log.Printf("json: json records with erro as\n\n%s\n\n", jsonSlice)
-		log.Fatalf("client: could not index file with status %d and body %s", status, body)
-
+		return
 	}
+
+	log.Printf("client: %s", body)
+	for idx, record := range payLoad {
+		if CreateDoc(index, record) != 200 && idx+1 != len(payLoad) {
+			log.Printf("data: inserted %d records", idx)
+
+			wg.Add(1)
+			go CreateDocBatch(index, payLoad[idx+1:], wg)
+
+			return
+		}
+	}
+
+	fmt.Printf("data: inserted %d records", len(payLoad))
 
 }
