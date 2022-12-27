@@ -2,10 +2,18 @@ package data
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 )
 
-func TestExtrac(t *testing.T) {
+func TestExtract(t *testing.T) {
+
+	ch := make(chan map[string]string)
+	wg := sync.WaitGroup{}
+
+	t.Cleanup(func() {
+		close(ch)
+	})
 
 	path := "../../test/fixtures/normal_extract_data"
 
@@ -16,13 +24,13 @@ func TestExtrac(t *testing.T) {
 		"to":         "david.delainey@enron.com",
 		"subject":    "Hello World",
 		"x_filename": "don baughman 6-25-02.PST",
-		"contents":   "Some content\n\nWith some new lines\n\n",
+		"contents":   "\nSome content\n\nWith some new lines\n\n",
+		"file_path":  path,
 	}
-	got, err := Extract(path)
 
-	if err != nil {
-		t.Fatalf("unexpected error opening test store: %v", err)
-	}
+	wg.Add(1)
+	go Extract(path, ch, &wg)
+	got := <-ch
 
 	if !reflect.DeepEqual(got, want) {
 		t.Error("got ", got, " wanted ", want)
@@ -31,6 +39,13 @@ func TestExtrac(t *testing.T) {
 }
 
 func TestExtractWithCompletelyEmptyField(t *testing.T) {
+
+	ch := make(chan map[string]string)
+	var wg sync.WaitGroup
+
+	t.Cleanup(func() {
+		close(ch)
+	})
 
 	path := "../../test/fixtures/empty_field_data"
 
@@ -41,33 +56,50 @@ func TestExtractWithCompletelyEmptyField(t *testing.T) {
 		"to":         "david.delainey@enron.com",
 		"subject":    "",
 		"x_filename": "don baughman 6-25-02.PST",
-		"contents":   "Some content\n",
+		"contents":   "\nSome content\n",
+		"file_path":  path,
 	}
-	got, err := Extract(path)
 
-	if err != nil {
-		t.Fatalf("unexpected error opening test store: %v", err)
-	}
+	wg.Add(1)
+	go Extract(path, ch, &wg)
+	got := <-ch
 
 	if !reflect.DeepEqual(got, want) {
 		t.Error("got ", got, " wanted ", want)
 	}
-
 }
 
 func TestExtractMissingMetadataError(t *testing.T) {
 
+	ch := make(chan map[string]string)
+	var wg sync.WaitGroup
+	var got map[string]string
+
+	t.Cleanup(func() {
+		close(ch)
+	})
+
 	path := "../../test/fixtures/missing_metadata"
 
-	_, err := Extract(path)
+	wg.Add(1)
+	Extract(path, ch, &wg)
 
-	if err == nil {
-		t.Errorf("expected an error for file with missing metadata")
+	select {
+	case got = <-ch:
+		t.Error("Expected empty map, got ", got)
+	default:
 	}
 
 }
 
 func TestExtractMultiNewLineField(t *testing.T) {
+
+	ch := make(chan map[string]string)
+	var wg sync.WaitGroup
+
+	t.Cleanup(func() {
+		close(ch)
+	})
 
 	path := "../../test/fixtures/multi_new_line_field"
 
@@ -77,13 +109,13 @@ func TestExtractMultiNewLineField(t *testing.T) {
 		"from":       "don.baughman@enron.com",
 		"subject":    "Call Laddie for house party: Mom &dad & Mary   Janice Nieghbour",
 		"x_filename": "don baughman 6-25-02.PST",
-		"contents":   "Content\n",
+		"contents":   "\nContent\n",
+		"file_path":  path,
 	}
-	got, err := Extract(path)
 
-	if err != nil {
-		t.Fatalf("unexpected error opening test store: %v", err)
-	}
+	wg.Add(1)
+	go Extract(path, ch, &wg)
+	got := <-ch
 
 	if !reflect.DeepEqual(got, want) {
 		t.Error("got ", got, " wanted ", want)
@@ -92,6 +124,13 @@ func TestExtractMultiNewLineField(t *testing.T) {
 }
 
 func TestExtractMultiLineField(t *testing.T) {
+
+	ch := make(chan map[string]string)
+	var wg sync.WaitGroup
+
+	t.Cleanup(func() {
+		close(ch)
+	})
 
 	path := "../../test/fixtures/multi_line_field"
 
@@ -102,13 +141,13 @@ func TestExtractMultiLineField(t *testing.T) {
 		"to":         "susan.bailey@enron.com, credit <.williams@enron.com>, legal <.taylor@enron.com>",
 		"subject":    "FW: assignment",
 		"x_filename": "SBAILE2 (Non-Privileged).pst",
-		"contents":   "\nContent\n\n Some more content\n",
+		"contents":   "\n\nContent\n\n Some more content\n",
+		"file_path":  path,
 	}
-	got, err := Extract(path)
 
-	if err != nil {
-		t.Fatalf("unexpected error opening test store: %v", err)
-	}
+	wg.Add(1)
+	go Extract(path, ch, &wg)
+	got := <-ch
 
 	if !reflect.DeepEqual(got, want) {
 		t.Error("got ", got, " wanted ", want)
@@ -118,6 +157,13 @@ func TestExtractMultiLineField(t *testing.T) {
 
 func TestProcess(t *testing.T) {
 
+	ch := make(chan map[string]string)
+	var wg sync.WaitGroup
+
+	t.Cleanup(func() {
+		close(ch)
+	})
+
 	processFields := map[string]string{
 		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
 		"content_type": "text/plain; charset=us-ascii",
@@ -125,29 +171,47 @@ func TestProcess(t *testing.T) {
 	}
 
 	want := map[string]string{
-		"message_id":   "15722007.1075840335489",
+		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
+		"_id":          "15722007.1075840335489",
 		"content_type": "text/plain",
 		"charset":      "us-ascii",
 		"x_folder":     `/ExMerge - Baughman Jr., Don/Deleted Items`,
 	}
 
-	got := Process(processFields)
+	wg.Add(1)
+	go Process(processFields, ch, &wg)
+	got := <-ch
 
 	if !reflect.DeepEqual(got, want) {
 		t.Error("got ", got, " wanted ", want)
 	}
-
 }
 
 func BenchmarkExtract(b *testing.B) {
+	ch := make(chan map[string]string)
+	var wg sync.WaitGroup
 
+	b.Cleanup(func() {
+		close(ch)
+	})
+
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Extract("../../test/fixtures/bench_doc")
+		wg.Add(1)
+		go Extract("../../test/fixtures/bench_doc", ch, &wg)
+		<-ch
 	}
 
 }
 
 func BenchmarkProcess(b *testing.B) {
+
+	ch := make(chan map[string]string)
+	var wg sync.WaitGroup
+
+	b.Cleanup(func() {
+		close(ch)
+	})
 
 	processFields := map[string]string{
 		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
@@ -157,7 +221,9 @@ func BenchmarkProcess(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		Process(processFields)
+		wg.Add(1)
+		go Process(processFields, ch, &wg)
+		<-ch
 	}
 
 }
