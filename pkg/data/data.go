@@ -49,7 +49,6 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 
 	if allMetadataParsed {
 		ch <- fields
-		zinc.LogInfo("appLogs", fmt.Sprintf("extrated data from path %s", path))
 		return
 	}
 

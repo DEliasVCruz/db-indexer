@@ -61,7 +61,6 @@ func (i Indexer) findFiles(directory fs.FS, ch chan<- string) {
 
 		if !dir.IsDir() {
 			ch <- fullPath
-			zinc.LogInfo("appLogs", fmt.Sprintf("processing path %s", fullPath))
 		}
 
 		return nil

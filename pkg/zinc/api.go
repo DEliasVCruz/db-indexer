@@ -24,40 +24,32 @@ var request = requests.Request{
 }
 
 func ExistsIndex(index string) int {
-	status, body := request.Get(fmt.Sprintf("api/index/%s", index), nil)
-	log.Printf("client: response with status %d and body %s\n", status, body)
+	status, _ := request.Get(fmt.Sprintf("api/index/%s", index), nil)
 
 	return status
 }
 
 func CreateIndex(index string, config []byte) {
 	status, body := request.Post("api/index", config)
-	log.Printf("client: response with status %d and body %s\n", status, body)
 
-	if status == 200 {
-		log.Printf("index: %s index was successfully created", index)
-	} else {
-		log.Fatalf("status: something went wrong got status code %d", status)
+	if status != 200 {
+		log.Fatalf("status: something went wrong got status code %d and %s", status, body)
 	}
 }
 
 func DeleteIndex(index string) {
 	status, body := request.Delete(fmt.Sprintf("api/index/%s", index), nil)
-	log.Printf("client: response with status %d and body %s\n", status, body)
-	if status == 200 {
-		log.Printf("index: %s index was deleted", index)
-	} else {
-		log.Fatalf("index: something went wrong trying to delete index %s", index)
+
+	if status != 200 {
+		log.Fatalf("index: something went wrong trying to delete index %s, got status code %d and %s", index, status, body)
 	}
 }
 
 func CreateDoc(index string, payLoad map[string]string) {
 	jsonPayLoad, _ := json.Marshal(payLoad)
 	status, body := request.Post(fmt.Sprintf("api/%s/_doc", index), jsonPayLoad)
-	log.Printf("client: response with status %d and body %s\n", status, body)
-	if status == 200 {
-		log.Printf("client: successful response with status %d and body %s", status, body)
-	} else {
+
+	if status != 200 {
 		log.Fatalf("client: could not index file with status %d and body %s", status, body)
 	}
 }
@@ -66,12 +58,13 @@ func CreateDocBatch(index string, payLoad []map[string]string) {
 	jsonSlice, _ := json.Marshal(payLoad)
 	jsonPayLoad := []byte(fmt.Sprintf(`{ "index": "%s", "records": %s }`, index, jsonSlice))
 	status, body := request.Post("api/_bulkv2", jsonPayLoad)
-	// This is repeating the message
-	log.Printf("client: response with status %d and body %s\n", status, body)
+
 	if status == 200 {
-		log.Printf("client: successful response with status %d and body %s", status, body)
+		log.Printf("client: %s", body)
 	} else {
+		log.Printf("json: json records with erro as\n\n%s\n\n", jsonSlice)
 		log.Fatalf("client: could not index file with status %d and body %s", status, body)
+
 	}
 
 }
