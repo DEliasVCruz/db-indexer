@@ -33,8 +33,11 @@ func CreateIndex(index string, config []byte) {
 	status, body := request.Post("api/index", config)
 
 	if status != 200 {
-		log.Fatalf("status: something went wrong got status code %d and %s", status, body)
+		log.Fatalf("index: could not create index, got status code %d and %s", status, body)
 	}
+
+	log.Printf("index: the %s index was created", index)
+	LogInfo("appLogs", fmt.Sprintf("the %s idex was created", index))
 }
 
 func DeleteIndex(index string) {

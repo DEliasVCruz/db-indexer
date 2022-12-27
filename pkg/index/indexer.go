@@ -24,6 +24,7 @@ func (i Indexer) Index() {
 		log.Printf("index: %s index already exists", i.Name)
 	} else {
 		log.Printf("index: the %s index does not exist", i.Name)
+		log.Printf("index: creating %s index", i.Name)
 		zinc.CreateIndex(i.Name, i.Config)
 	}
 
