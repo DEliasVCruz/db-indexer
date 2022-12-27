@@ -29,8 +29,11 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 	fields := make(map[string]string)
 	var field string
 
-	allMetadataParsed := false
 	scanner := bufio.NewScanner(input)
+	buf := make([]byte, 70*1024)
+	scanner.Buffer(buf, bufio.MaxScanTokenSize)
+
+	allMetadataParsed := false
 	for scanner.Scan() {
 		line := scanner.Text()
 		if !allMetadataParsed {
