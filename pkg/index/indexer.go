@@ -48,7 +48,7 @@ func (i Indexer) Index() {
 	i.wg.Wait()
 }
 
-func (i Indexer) findFiles(directory fs.FS, ch chan<- string) {
+func (i Indexer) findFiles(directory fs.FS, writeCh chan<- string) {
 	defer i.wg.Done()
 
 	fs.WalkDir(directory, ".", func(childPath string, dir fs.DirEntry, err error) error {
@@ -60,13 +60,13 @@ func (i Indexer) findFiles(directory fs.FS, ch chan<- string) {
 		}
 
 		if !dir.IsDir() {
-			ch <- fullPath
+			writeCh <- fullPath
 		}
 
 		return nil
 	})
 
-	close(ch)
+	close(writeCh)
 }
 
 func (i Indexer) extractData(readCh <-chan string, writeCh chan<- map[string]string) {
