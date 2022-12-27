@@ -1,0 +1,4 @@
+BenchmarkExtract
+BenchmarkExtract-8   	    3393	    295098 ns/op
+BenchmarkProcess
+BenchmarkProcess-8   	  374326	      2849 ns/op
