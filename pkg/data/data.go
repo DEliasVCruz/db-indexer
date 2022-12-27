@@ -3,6 +3,7 @@ package data
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strings"
@@ -58,6 +59,11 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 		return
 	}
 
+	log.Printf("data: failed to extract data at path %s", path)
+	if scanner.Err() != nil {
+		zinc.LogError("appLogs", fmt.Sprintf("scanning failure at path %s", path), scanner.Err().Error())
+		return
+	}
 	zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
 }
 
