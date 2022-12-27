@@ -19,7 +19,6 @@ type Indexer struct {
 	wg         *sync.WaitGroup
 	records    [100]map[string]string
 	recordIdx  int
-	filesCount int
 }
 
 func (i Indexer) Index() {
