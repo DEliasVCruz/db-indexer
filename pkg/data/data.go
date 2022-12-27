@@ -12,9 +12,9 @@ import (
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
-var fieldRegex, _ = regexp.Compile(`^([\w\-]*):\s*(.*)`)
-var brokenLineRegex, _ = regexp.Compile(`^\s*(.*)\s*$`)
-var messageRegex, _ = regexp.Compile(`^<(\d+\.\d+)\..*`)
+var fieldRegex = regexp.MustCompile(`^([\w\-]*):\s*(.*)`)
+var brokenLineRegex = regexp.MustCompile(`^\s*(.*)\s*$`)
+var messageRegex = regexp.MustCompile(`^<(\d+\.\d+)\..*`)
 
 var fieldMetadataFlag = "x_filename"
 var specialChars = [8]string{"-", "_", " ", "\n", ";", "=", `\`, "/"}
@@ -47,6 +47,8 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 		}
 	}
 
+	fields["file_path"] = path
+
 	if allMetadataParsed {
 		ch <- fields
 		return
@@ -60,7 +62,7 @@ func Process(fields map[string]string, ch chan<- map[string]string, wg *sync.Wai
 
 	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
 	if messageId != nil {
-		fields["message_id"] = messageId[1]
+		fields["_id"] = messageId[1]
 	}
 	contentTypes := strings.Split(fields["content_type"], specialChars[4])
 	if len(contentTypes) > 1 {
