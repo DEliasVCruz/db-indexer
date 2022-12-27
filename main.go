@@ -14,7 +14,7 @@ func main() {
 
 	indexer := index.Indexer{
 		Name:       "emailsTest",
-		DataFolder: filepath.Join(os.Args[1], "maildir/bailey-s/inbox"),
+		DataFolder: os.Args[1],
 		Config:     indexConfig,
 	}
 	indexer.Index()
