@@ -95,14 +95,15 @@ func (i Indexer) processData(readCh <-chan map[string]string, writeCh chan<- map
 func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 	defer i.wg.Done()
 
-	var records [100]map[string]string
+	var records [500]map[string]string
+	size := len(records)
 	recordIdx := 0
 
 	for record := range readCh {
-		if recordIdx < 100 {
+		if recordIdx < size {
 			records[recordIdx] = record
 		} else {
-			recordsSlice := make([]map[string]string, 100)
+			recordsSlice := make([]map[string]string, size)
 			copy(recordsSlice, records[:])
 
 			i.wg.Add(1)
