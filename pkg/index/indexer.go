@@ -17,8 +17,6 @@ type Indexer struct {
 	DataFolder string
 	Config     []byte
 	wg         *sync.WaitGroup
-	records    [100]map[string]string
-	recordIdx  int
 }
 
 func (i Indexer) Index() {
@@ -48,11 +46,6 @@ func (i Indexer) Index() {
 	go i.collectRecords(records)
 
 	i.wg.Wait()
-
-	if i.recordIdx != 0 {
-		zinc.CreateDocBatch(i.Name, i.records[:i.recordIdx])
-	}
-
 }
 
 func (i Indexer) findFiles(directory fs.FS, ch chan<- string) {
@@ -106,14 +99,24 @@ func (i Indexer) processData(readCh <-chan map[string]string, writeCh chan<- map
 
 func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 	defer i.wg.Done()
+
+	var records [100]map[string]string
+	recordIdx := 0
+
 	for record := range readCh {
-		if i.recordIdx < 100 {
-			i.records[i.recordIdx] = record
-			i.recordIdx += 1
+		if recordIdx < 100 {
+			records[recordIdx] = record
 		} else {
-			zinc.CreateDocBatch(i.Name, i.records[:i.recordIdx])
-			i.recordIdx = 0
+			zinc.CreateDocBatch(i.Name, records[:recordIdx])
+			recordIdx = 0
+			records[recordIdx] = record
 		}
+
+		recordIdx += 1
+	}
+
+	if recordIdx != 0 {
+		zinc.CreateDocBatch(i.Name, records[:recordIdx])
 	}
 
 }
