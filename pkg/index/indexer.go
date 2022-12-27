@@ -38,18 +38,19 @@ func (i Indexer) Index() {
 	i.wg.Add(1)
 	go i.findFiles(os.DirFS(i.DataFolder), files)
 
+	i.wg.Add(1)
 	go i.extractData(files, dataExtracts)
 
+	i.wg.Add(1)
 	go i.processData(dataExtracts, records)
 
+	i.wg.Add(1)
 	go i.collectRecords(records)
 
 	i.wg.Wait()
 
-	close(dataExtracts)
-	close(records)
-	if i.recordCount != 0 {
-		zinc.CreateDocBatch(i.Name, i.records[:i.recordCount])
+	if i.recordIdx != 0 {
+		zinc.CreateDocBatch(i.Name, i.records[:i.recordIdx])
 	}
 
 }
@@ -76,23 +77,36 @@ func (i Indexer) findFiles(directory fs.FS, ch chan<- string) {
 }
 
 func (i Indexer) extractData(readCh <-chan string, writeCh chan<- map[string]string) {
+	defer i.wg.Done()
+
+	var wg sync.WaitGroup
 	for file := range readCh {
-		i.wg.Add(1)
-		go data.Extract(file, writeCh, i.wg)
+		wg.Add(1)
+		go data.Extract(file, writeCh, &wg)
 	}
+
+	wg.Wait()
+	close(writeCh)
+
 }
 
 func (i Indexer) processData(readCh <-chan map[string]string, writeCh chan<- map[string]string) {
+	defer i.wg.Done()
+
+	var wg sync.WaitGroup
 	for dataExtract := range readCh {
-		i.wg.Add(1)
-		go data.Process(dataExtract, writeCh, i.wg)
+		wg.Add(1)
+		go data.Process(dataExtract, writeCh, &wg)
 	}
+
+	wg.Wait()
+	close(writeCh)
 
 }
 
 func (i Indexer) collectRecords(readCh <-chan map[string]string) {
+	defer i.wg.Done()
 	for record := range readCh {
-		i.wg.Add(1)
 		if i.recordIdx < 100 {
 			i.records[i.recordIdx] = record
 			i.recordIdx += 1
@@ -100,7 +114,6 @@ func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 			zinc.CreateDocBatch(i.Name, i.records[:i.recordIdx])
 			i.recordIdx = 0
 		}
-		i.wg.Done()
 	}
 
 }
