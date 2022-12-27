@@ -33,16 +33,10 @@ func (i Indexer) Index() {
 
 	i.wg = &sync.WaitGroup{}
 
-	i.wg.Add(1)
+	i.wg.Add(4)
 	go i.findFiles(os.DirFS(i.DataFolder), files)
-
-	i.wg.Add(1)
 	go i.extractData(files, dataExtracts)
-
-	i.wg.Add(1)
 	go i.processData(dataExtracts, records)
-
-	i.wg.Add(1)
 	go i.collectRecords(records)
 
 	i.wg.Wait()
