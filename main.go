@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/index"

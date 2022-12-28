@@ -28,24 +28,21 @@ func (i Indexer) Index() {
 		zinc.CreateIndex(i.Name, i.Config)
 	}
 
-	files := make(chan string)
 	records := make(chan map[string]string)
-	dataExtracts := make(chan map[string]string)
 
 	i.wg = &sync.WaitGroup{}
 
-	i.wg.Add(4)
-	go i.findFiles(os.DirFS(i.DataFolder), files)
-	go i.extractData(files, dataExtracts)
-	go i.processData(dataExtracts, records)
+	i.wg.Add(2)
+	go i.findFiles(os.DirFS(i.DataFolder), records)
 	go i.collectRecords(records)
 
 	i.wg.Wait()
 }
 
-func (i Indexer) findFiles(directory fs.FS, writeCh chan<- string) {
+func (i Indexer) findFiles(directory fs.FS, writeCh chan<- map[string]string) {
 	defer i.wg.Done()
 
+	var wg sync.WaitGroup
 	fs.WalkDir(directory, ".", func(childPath string, dir fs.DirEntry, err error) error {
 
 		fullPath := filepath.Join(i.DataFolder, childPath)
@@ -55,41 +52,15 @@ func (i Indexer) findFiles(directory fs.FS, writeCh chan<- string) {
 		}
 
 		if !dir.IsDir() {
-			writeCh <- fullPath
+			wg.Add(1)
+			go data.Extract(fullPath, writeCh, &wg)
 		}
 
 		return nil
 	})
 
-	close(writeCh)
-}
-
-func (i Indexer) extractData(readCh <-chan string, writeCh chan<- map[string]string) {
-	defer i.wg.Done()
-
-	var wg sync.WaitGroup
-	for file := range readCh {
-		wg.Add(1)
-		go data.Extract(file, writeCh, &wg)
-	}
-
 	wg.Wait()
 	close(writeCh)
-
-}
-
-func (i Indexer) processData(readCh <-chan map[string]string, writeCh chan<- map[string]string) {
-	defer i.wg.Done()
-
-	var wg sync.WaitGroup
-	for dataExtract := range readCh {
-		wg.Add(1)
-		go data.Process(dataExtract, writeCh, &wg)
-	}
-
-	wg.Wait()
-	close(writeCh)
-
 }
 
 func (i Indexer) collectRecords(readCh <-chan map[string]string) {
