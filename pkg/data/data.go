@@ -55,7 +55,7 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 	fields["file_path"] = path
 
 	if allMetadataParsed {
-		ch <- fields
+		ch <- process(fields)
 		return
 	}
 
@@ -67,8 +67,7 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 	zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
 }
 
-func Process(fields map[string]string, ch chan<- map[string]string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func process(fields map[string]string) map[string]string {
 
 	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
 	if messageId != nil {
@@ -86,7 +85,6 @@ func Process(fields map[string]string, ch chan<- map[string]string, wg *sync.Wai
 	if val, ok := fields["x_folder"]; ok {
 		fields["x_folder"] = strings.ReplaceAll(val, specialChars[6], specialChars[7])
 	}
-	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], specialChars[6], specialChars[7])
 
-	ch <- fields
+	return fields
 }
