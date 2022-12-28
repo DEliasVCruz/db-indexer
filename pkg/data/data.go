@@ -74,10 +74,17 @@ func Process(fields map[string]string, ch chan<- map[string]string, wg *sync.Wai
 	if messageId != nil {
 		fields["_id"] = messageId[1]
 	}
-	contentTypes := strings.Split(fields["content_type"], specialChars[4])
-	if len(contentTypes) > 1 {
-		fields["content_type"] = contentTypes[0]
-		fields["charset"] = strings.Split(contentTypes[1], specialChars[5])[1]
+
+	if val, ok := fields["content_type"]; ok {
+		contentTypes := strings.Split(val, specialChars[4])
+		if len(contentTypes) > 1 {
+			fields["content_type"] = contentTypes[0]
+			fields["charset"] = strings.Split(contentTypes[1], specialChars[5])[1]
+		}
+	}
+
+	if val, ok := fields["x_folder"]; ok {
+		fields["x_folder"] = strings.ReplaceAll(val, specialChars[6], specialChars[7])
 	}
 	fields["x_folder"] = strings.ReplaceAll(fields["x_folder"], specialChars[6], specialChars[7])
 
