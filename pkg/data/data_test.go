@@ -18,6 +18,7 @@ func TestExtract(t *testing.T) {
 	path := "../../test/fixtures/normal_extract_data"
 
 	want := map[string]string{
+		"_id":        "5860470.1075855667730",
 		"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
 		"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
 		"from":       "phillip.allen@enron.com",
@@ -50,6 +51,7 @@ func TestExtractWithCompletelyEmptyField(t *testing.T) {
 	path := "../../test/fixtures/empty_field_data"
 
 	want := map[string]string{
+		"_id":        "5860470.1075855667730",
 		"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
 		"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
 		"from":       "phillip.allen@enron.com",
@@ -104,6 +106,7 @@ func TestExtractMultiNewLineField(t *testing.T) {
 	path := "../../test/fixtures/multi_new_line_field"
 
 	want := map[string]string{
+		"_id":        "15722007.1075840335489",
 		"message_id": "<15722007.1075840335489.JavaMail.evans@thyme>",
 		"date":       "Thu, 13 Dec 2001 06:39:18 -0800 (PST)",
 		"from":       "don.baughman@enron.com",
@@ -135,6 +138,7 @@ func TestExtractMultiLineField(t *testing.T) {
 	path := "../../test/fixtures/multi_line_field"
 
 	want := map[string]string{
+		"_id":        "33534862.1075863219076",
 		"message_id": "<33534862.1075863219076.JavaMail.evans@thyme>",
 		"date":       "Mon, 26 Nov 2001 12:27:12 -0800 (PST)",
 		"from":       "craig.breslau@enron.com",
@@ -157,13 +161,6 @@ func TestExtractMultiLineField(t *testing.T) {
 
 func TestProcess(t *testing.T) {
 
-	ch := make(chan map[string]string)
-	var wg sync.WaitGroup
-
-	t.Cleanup(func() {
-		close(ch)
-	})
-
 	processFields := map[string]string{
 		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
 		"content_type": "text/plain; charset=us-ascii",
@@ -178,9 +175,7 @@ func TestProcess(t *testing.T) {
 		"x_folder":     `/ExMerge - Baughman Jr., Don/Deleted Items`,
 	}
 
-	wg.Add(1)
-	go Process(processFields, ch, &wg)
-	got := <-ch
+	got := process(processFields)
 
 	if !reflect.DeepEqual(got, want) {
 		t.Error("got ", got, " wanted ", want)
@@ -206,13 +201,6 @@ func BenchmarkExtract(b *testing.B) {
 
 func BenchmarkProcess(b *testing.B) {
 
-	ch := make(chan map[string]string)
-	var wg sync.WaitGroup
-
-	b.Cleanup(func() {
-		close(ch)
-	})
-
 	processFields := map[string]string{
 		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
 		"content_type": "text/plain; charset=us-ascii",
@@ -221,9 +209,7 @@ func BenchmarkProcess(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		wg.Add(1)
-		go Process(processFields, ch, &wg)
-		<-ch
+		process(processFields)
 	}
 
 }
