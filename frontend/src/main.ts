@@ -1,5 +1,10 @@
 import { createApp } from "vue";
-import App from "./App.vue";
+import LandingApp from "./app/LandingApp.vue";
+import AboutPage from "./app/AboutPage.vue";
 import "./index.css";
 
-createApp(App).mount("#app");
+const landing = createApp(LandingApp);
+const about = createApp(AboutPage);
+
+landing.mount("#app");
+about.mount("#about");
