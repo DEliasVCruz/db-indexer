@@ -28,7 +28,9 @@
       <span></span>
       <span></span>
       <span></span>
-      <h1 class="absoulte h-32 py-6 text-center text-4xl text-yellow-200">
+      <h1
+        class="absoulte ms:text-4xl h-32 py-6 text-center text-3xl text-yellow-200"
+      >
         Mailing Directory Indexer
       </h1>
     </div>
