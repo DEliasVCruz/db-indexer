@@ -5,14 +5,11 @@ import DropZone from "../components/DropZone.vue";
 </script>
 
 <template>
-  <header></header>
-
+  <LandingHeader />
   <main>
-    <LandingHeader />
-    <!-- <h1>Hello World</h1> -->
     <DropZone />
-    <TheFooter />
   </main>
+  <TheFooter />
 </template>
 
 <style scoped></style>
