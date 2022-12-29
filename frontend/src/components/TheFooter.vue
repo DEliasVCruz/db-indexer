@@ -1,7 +1,7 @@
 <template>
-  <footer class="relative mt-auto w-screen bg-gray-900 py-6">
+  <footer class="relative mt-auto h-12 w-screen bg-gray-900 py-1 sm:py-2">
     <p
-      class="absolute bottom-0 -left-1 m-1 w-screen p-0.5 text-center text-xs font-semibold text-gray-400 sm:left-0 sm:p-1 sm:text-left"
+      class="absolute bottom-0 -left-1 m-1 w-full p-0.5 text-center text-xs font-semibold text-gray-400 sm:left-0 sm:w-auto sm:p-1 sm:text-left"
     >
       <!-- class="absolute bottom-0 -left-1 m-1 w-screen p-0.5 text-center text-xs font-semibold text-gray-500" -->
       Diseñado y desarrollado por
