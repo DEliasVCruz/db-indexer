@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .outer-layer {
+    @apply flex h-screen flex-col;
+  }
+  .sidebar-option {
+    @apply relative mx-auto mt-2 mb-2 flex h-12 w-12 cursor-pointer
+           items-center justify-center rounded-full border-0
+           bg-gray-500 bg-opacity-0  transition-all
+           duration-150 ease-linear hover:rounded-xl hover:bg-opacity-20
+           hover:shadow-lg;
+  }
+  .sidebar-tooltip {
+    @apply absolute left-14 m-2 w-auto min-w-max origin-left scale-0
+           rounded-md bg-gray-900 p-2 text-xs font-bold text-white
+           shadow-md transition-all duration-150;
+  }
+}
