@@ -4,9 +4,11 @@ import TheHeader from "../components/TheHeader.vue";
 </script>
 
 <template>
-  <TheHeader :search-bar="false" />
-  <main></main>
-  <TheFooter />
+  <div class="outer-layer">
+    <TheHeader :search-bar="false" />
+    <main></main>
+    <TheFooter />
+  </div>
 </template>
 
 <style scoped></style>
