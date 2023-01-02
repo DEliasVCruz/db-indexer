@@ -7,8 +7,16 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div>
-    <TableCell v-for="value in props.data" :key="props.data.indexOf(value)" />
+  <div class="flex grow cursor-pointer flex-col gap-0">
+    <TableColumnHeader :title="props.name" />
+    <div class="flex flex-col">
+      <TableCell
+        v-for="(cellValue, index) in props.cellValues"
+        :key="index"
+        :row-id="index + 1"
+        :value="cellValue"
+      />
+    </div>
   </div>
 </template>
 
