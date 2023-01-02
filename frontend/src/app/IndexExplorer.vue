@@ -8,10 +8,12 @@ import ResultTable from "@/components/ResultTable.vue";
 <template>
   <div class="outer-layer">
     <TheHeader :search-bar="true" />
-    <main flex flex-row>
+    <div class="flex h-[85.5vh] w-screen flex-row gap-4">
       <SideBar />
-      <ResultTable />
-    </main>
+      <main class="w-[90vw]">
+        <ResultTable />
+      </main>
+    </div>
     <TheFooter />
   </div>
 </template>
