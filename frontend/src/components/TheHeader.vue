@@ -51,6 +51,7 @@ const props = defineProps<{
           <h1 class="mx-2 hidden sm:inline-block">MailInDir</h1>
         </div>
       </div>
+      <TheSearchBar v-if="props.searchBar" />
     </div>
   </header>
 </template>
