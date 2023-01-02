@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import TableCell from "./TableCell.vue";
+import TableColumnHeader from "./TableColumnHeader.vue";
 
-const props = defineProps<{
-  data: string[];
-}>();
+export interface Props {
+  name: string;
+  cellValues?: string[];
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  cellValues: () => ["Empty"],
+});
 </script>
 
 <template>
@@ -19,5 +25,3 @@ const props = defineProps<{
     </div>
   </div>
 </template>
-
-<style scoped></style>
