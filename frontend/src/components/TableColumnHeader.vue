@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { column } from "../globals/directory";
+import { column } from "../globals/table";
 
 const props = defineProps<{
   title: string;
