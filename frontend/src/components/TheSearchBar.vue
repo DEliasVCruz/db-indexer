@@ -1,4 +1,19 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { reactive } from "vue";
+import { columnData } from "@/globals/table";
+import { searchText } from "@/lib/search";
+
+function search() {
+  searchText(searchInput.text).then((columns) => columnData.set(columns));
+}
+
+const searchInput = reactive({
+  text: "",
+  reset() {
+    this.text = "";
+  },
+});
+</script>
 
 <template>
   <form
@@ -22,12 +37,35 @@
       </svg>
     </button>
     <input
-      class="my-2 w-[55vw] pr-2 outline-none"
+      v-model="searchInput.text"
+      class="my-2 w-[40vw] pr-2 outline-none"
       autocomplete="off"
       type="text"
       name="search-box"
       placeholder="Search index"
+      @keyup.enter="search"
     />
+    <button
+      v-if="searchInput.text != ''"
+      class="mr-1 rounded-full bg-gray-200 bg-opacity-0 p-3 hover:bg-opacity-60"
+      @click="searchInput.reset()"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="h-6 w-6"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+    <span v-else class="mr-3 w-10"></span>
     <button
       class="mr-1 rounded-full bg-gray-200 bg-opacity-0 p-3 hover:bg-opacity-60"
     >
