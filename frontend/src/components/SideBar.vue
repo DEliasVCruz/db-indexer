@@ -12,7 +12,7 @@ const options = reactive([
 
 <template>
   <div
-    class="left-0 m-0 flex h-full w-16 flex-col bg-red-500 text-white shadow-lg"
+    class="left-0 z-10 m-0 flex h-full w-16 flex-none flex-col bg-red-500 text-white shadow-lg"
   >
     <SideBarOption
       v-for="option in options"
