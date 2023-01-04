@@ -11,15 +11,15 @@ const selected = computed(() => props.title === column.selected);
 
 <template>
   <div
-    class="mt-2 ml-0 flex flex-col border-b-2"
+    class="mt-2 ml-0 w-1/4 border-b-2"
     @click.passive="column.select(props.title)"
   >
-    <div class="py-2 px-1 text-left after:h-3 after:bg-blue-200">
+    <div class="w-[22rem] py-2 px-1 text-left after:h-3 after:bg-blue-200">
       {{ props.title }}
     </div>
     <span
       aria-hidden="true"
-      class="block h-1 w-full group-active:bg-blue-500"
+      class="block h-1 w-80 group-active:bg-blue-500"
       :class="{ 'bg-blue-500': selected }"
     ></span>
   </div>
