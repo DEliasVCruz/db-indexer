@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="flex h-full w-full flex-row gap-0">
+  <div class="flex h-full flex-row overflow-auto">
     <TableColumn
       v-for="column in props.columns"
       :key="column.name"

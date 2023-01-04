@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="flex grow cursor-pointer flex-col gap-0">
+  <div class="relative flex max-w-xl cursor-pointer flex-col">
     <TableColumnHeader :title="props.name" />
     <div class="flex flex-col">
       <TableCell

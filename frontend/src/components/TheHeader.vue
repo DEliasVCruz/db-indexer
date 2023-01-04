@@ -7,11 +7,11 @@ const props = defineProps<{
 </script>
 
 <template>
-  <header class="top-0 left-0 right-0 h-[8.5vh] w-screen bg-blue-900">
+  <header class="h-15 top-0 left-0 right-0 w-screen flex-none bg-blue-900">
     <div class="flex h-full w-full flex-row p-2 sm:gap-x-5">
       <div class="flex h-full grow flex-row gap-x-2 sm:grow-0">
         <div
-          class="w-full rounded-full bg-gray-200 bg-opacity-0 pt-3 hover:bg-opacity-60 sm:w-fit sm:p-3"
+          class="w-full rounded-full bg-gray-500 bg-opacity-0 pt-3 transition-all duration-150 ease-linear hover:bg-opacity-20 sm:w-fit sm:p-3"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
