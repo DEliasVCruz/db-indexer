@@ -3,20 +3,11 @@ package zinc
 import (
 	"encoding/json"
 	"errors"
+	"github.com/DEliasVCruz/db-indexer/pkg/zinc/search"
 	"log"
 )
 
-type searchQuery struct {
-	From  int        `json:"from"`
-	Size  int        `json:"size"`
-	Query *queryType `json:"query"`
-}
-
-type queryType struct {
-	Match map[string]map[string]string `json:"match"`
-}
-
-func search(index string, payload *searchQuery) (int, []byte) {
+func results(index string, payload *search.Query) (int, []byte) {
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		log.Fatalf("server: internal server error %s", err)
@@ -26,21 +17,27 @@ func search(index string, payload *searchQuery) (int, []byte) {
 
 }
 
-func SearchMatch(index string, query map[string]map[string]string, from, size int) ([]byte, error) {
+func SearchMatch(index string, query map[string]map[string]string, from, size int) (*search.Response, error) {
 
-	bodyPayload := &searchQuery{
+	bodyPayload := &search.Query{
 		From: from,
 		Size: size,
-		Query: &queryType{
+		Query: &search.QueryType{
 			Match: query,
 		}}
 
-	status, body := search(index, bodyPayload)
+	status, body := results(index, bodyPayload)
 
 	if status != 200 {
 		log.Printf("server: internal server error with status %d and body %s", status, body)
-		return []byte(""), errors.New("index server error")
+		return nil, errors.New("index server error")
 	}
 
-	return body, nil
+	var response *search.Response
+
+	if err := json.Unmarshal(body, &response); err != nil {
+		return nil, errors.New("could not unmarshal responsse")
+	}
+
+	return response, nil
 }
