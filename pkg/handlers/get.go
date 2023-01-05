@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
+	"github.com/DEliasVCruz/db-indexer/pkg/data"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 	"github.com/go-chi/chi/v5"
 )
@@ -48,6 +51,19 @@ func SearchContents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(response)
+	data := &data.ColumnData{}
+
+	dataValues := reflect.ValueOf(data).Elem()
+
+	for _, hit := range response.Hits.Found {
+		hitValues := reflect.ValueOf(*hit.Source)
+		for i := 0; i < hitValues.NumField(); i++ {
+			dataValues.Field(i).Set(reflect.Append(dataValues.Field(i), hitValues.Field(i)))
+		}
+	}
+
+	payLoad, err := json.Marshal(data)
+
+	w.Write(payLoad)
 
 }
