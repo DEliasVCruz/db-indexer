@@ -1,20 +1,23 @@
 package main
 
 import (
-	"os"
+	"net/http"
 
-	"github.com/DEliasVCruz/db-indexer/pkg/check"
-	"github.com/DEliasVCruz/db-indexer/pkg/index"
+	"github.com/DEliasVCruz/db-indexer/pkg/handlers"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
-	indexConfig, err := os.ReadFile("./index.json")
-	check.Error("fileOpen", err)
+	r := chi.NewRouter()
 
-	indexer := index.Indexer{
-		Name:       "emailsTest",
-		DataFolder: os.Args[1],
-		Config:     indexConfig,
-	}
-	indexer.Index()
+	r.Use(middleware.Logger)
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello World!"))
+	})
+
+	r.Get("/index/{indexName}/search", handlers.SearchContents)
+
+	http.ListenAndServe(":3000", r)
 }
