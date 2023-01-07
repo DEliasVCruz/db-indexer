@@ -6,6 +6,7 @@ export interface ColumnData {
 export interface SearchResponse {
   data?: {
     columns: Array<ColumnData>;
+    total: number;
   };
   error?: string;
 }

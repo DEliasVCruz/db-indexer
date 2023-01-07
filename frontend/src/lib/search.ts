@@ -1,13 +1,13 @@
 import { request } from "@/lib/http";
 import type { SearchResponse } from "@/globals/types";
 
-export async function searchText(text: string) {
-  const url = new URL("http://localhost:3001/index/myindex/search");
+export async function searchText(text: string, from: string, size: string) {
+  const url = new URL("http://localhost:3000/index/emailsTest/search");
 
   const response = await request
     .get({
       endpoint: url,
-      params: new URLSearchParams({ q: text }),
+      params: new URLSearchParams({ q: text, from: from, size: size }),
     })
     .catch((error: Error) => {
       return Promise.reject(error);
@@ -25,5 +25,12 @@ export async function searchText(text: string) {
     );
   }
 
-  return columns;
+  const total = data?.total;
+  if (!total) {
+    return Promise.reject(
+      new Error("Error getting total number of found values")
+    );
+  }
+
+  return { total: total, columns: columns };
 }
