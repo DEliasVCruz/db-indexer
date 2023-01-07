@@ -34,7 +34,7 @@ func SearchContents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if from >= size || from < 0 || size <= 0 {
+	if from < 0 || size <= 0 {
 		http.Error(w, "invalid page range", http.StatusBadRequest)
 		return
 	}
