@@ -12,11 +12,15 @@ const isHoveredRow = computed(() => props.rowId === row.hovered);
 
 <template>
   <p
-    class="w-[22rem] truncate hover:bg-gray-100"
-    :class="{ 'hovered-row': isHoveredRow, 'normal-row': !isHoveredRow }"
+    class="w-[22rem] truncate px-1 py-2 hover:bg-gray-100"
+    :class="{
+      'hovered-row': isHoveredRow,
+      'text-center italic': !props.value,
+      'normal-row': !isHoveredRow,
+    }"
     @mouseover.passive="row.hover(props.rowId)"
     @mouseleave.passive="row.hover(0)"
   >
-    {{ props.value }}
+    {{ props.value ? props.value : "-" }}
   </p>
 </template>
