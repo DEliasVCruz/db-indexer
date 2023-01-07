@@ -2,9 +2,15 @@
 import { reactive } from "vue";
 import { columnData } from "@/globals/table";
 import { searchText } from "@/lib/search";
+import { results } from "@/globals/table";
 
 function search() {
-  searchText(searchInput.text).then((columns) => columnData.set(columns));
+  searchText(searchInput.text, "0", results.size.toString()).then((payload) => {
+    results.setLastQuery(searchInput.text);
+    results.setTotalResults(payload.total);
+    results.resetRange();
+    columnData.set(payload.columns);
+  });
 }
 
 const searchInput = reactive({
