@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import ResultData from "@/components/ResultData.vue";
 import TableHeader from "@/components/TableHeader.vue";
-import { columnData } from "@/globals/table";
+import { columnData, row } from "@/globals/table";
+import { onDeactivated } from "vue";
+
+onDeactivated(() => {
+  row.hover(0);
+});
 </script>
 
 <template>
