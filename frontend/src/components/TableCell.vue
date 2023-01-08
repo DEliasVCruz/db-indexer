@@ -12,7 +12,7 @@ const isHoveredRow = computed(() => props.rowId === row.hovered);
 
 <template>
   <p
-    class="w-[22rem] truncate px-1 py-2 hover:bg-gray-100"
+    class="w-[22rem] select-none truncate px-1 py-2 hover:bg-gray-100"
     :class="{
       'hovered-row': isHoveredRow,
       'text-center italic': !props.value,
