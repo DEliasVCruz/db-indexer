@@ -5,11 +5,13 @@ import ToolBar from "@/components/ToolBar.vue";
 import SideBar from "@/components/SideBar.vue";
 import ResultTable from "@/components/ResultTable.vue";
 import MailView from "@/components/MailView.vue";
+import NoContent from "@/components/NoContent.vue";
 import { mainContent } from "@/globals/content";
 
 const contents = {
   ResultTable,
   MailView,
+  NoContent,
 };
 </script>
 
