@@ -9,6 +9,7 @@ import (
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
+	"github.com/DEliasVCruz/db-indexer/pkg/zinc/search"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -39,13 +40,17 @@ func SearchContents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := map[string]map[string]string{
-		"contents": {
-			"query": queryParms.Get("q"),
+	bodyPayload := &search.SearchQuery{
+		From: from,
+		Size: size,
+		Query: &search.QueryType{
+			Match: map[string]*search.Query{
+				"contents": {Text: queryParms.Get("q")},
+			},
 		},
 	}
 
-	response, err := zinc.SearchMatch(indexName, query, from, size)
+	response, err := zinc.Search(indexName, bodyPayload)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return

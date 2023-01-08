@@ -3,34 +3,24 @@ package zinc
 import (
 	"encoding/json"
 	"errors"
-	"github.com/DEliasVCruz/db-indexer/pkg/zinc/search"
 	"log"
+
+	"github.com/DEliasVCruz/db-indexer/pkg/check"
+	"github.com/DEliasVCruz/db-indexer/pkg/zinc/search"
 )
 
-func results(index string, payload *search.Query) (int, []byte) {
-	jsonPayload, err := json.Marshal(payload)
+func Search(index string, searchQuery *search.SearchQuery) (*search.Response, error) {
+
+	jsonPayload, err := json.Marshal(searchQuery)
 	if err != nil {
-		log.Fatalf("server: internal server error %s", err)
+		log.Printf("server: internal server error %s", err)
+		return nil, errors.New("could not marshal responsse")
 	}
 
-	return request.Post("es/"+index+"/_search", jsonPayload)
+	status, body := request.Post("es/"+index+"/_search", jsonPayload)
 
-}
-
-func SearchMatch(index string, query map[string]map[string]string, from, size int) (*search.Response, error) {
-
-	bodyPayload := &search.Query{
-		From: from,
-		Size: size,
-		Query: &search.QueryType{
-			Match: query,
-		}}
-
-	status, body := results(index, bodyPayload)
-
-	if status != 200 {
-		log.Printf("server: internal server error with status %d and body %s", status, body)
-		return nil, errors.New("index server error")
+	if err := check.SearchStatus(status); err != nil {
+		return nil, err
 	}
 
 	var response *search.Response
