@@ -1,9 +1,11 @@
 import { reactive } from "vue";
 import type { ColumnData } from "@/globals/types";
+import { mainContent } from "@/globals/content";
 
 interface Columns {
   columns: Array<ColumnData>;
   set(columns: Array<ColumnData>): void;
+  getRow(row: number): Map<string, string>;
 }
 
 export const column = reactive({
@@ -67,8 +69,14 @@ export const results = reactive({
 
 export const row = reactive({
   hovered: 0,
+  doubleClicked: 0,
+  data: new Map([["", ""]]),
   hover(row: number) {
     this.hovered = row;
+  },
+  render(rowId: number) {
+    this.data = columnData.getRow(rowId);
+    mainContent.setCurrent("MailView");
   },
 });
 
@@ -77,5 +85,12 @@ export const columnData: Columns = reactive({
   set(columns: Array<ColumnData>) {
     this.columns.length = 0;
     this.columns = columns;
+  },
+  getRow(rowId: number) {
+    const rowData: Map<string, string> = new Map();
+    this.columns.forEach((column) => {
+      rowData.set(column.name, column.values[rowId]);
+    });
+    return rowData;
   },
 });
