@@ -51,18 +51,34 @@ func SearchContents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &data.ColumnData{}
+	columns := &data.Columns{}
 
-	dataValues := reflect.ValueOf(data).Elem()
+	columnsValues := reflect.ValueOf(columns).Elem()
 
 	for _, hit := range response.Hits.Found {
 		hitValues := reflect.ValueOf(*hit.Source)
 		for i := 0; i < hitValues.NumField(); i++ {
-			dataValues.Field(i).Set(reflect.Append(dataValues.Field(i), hitValues.Field(i)))
+			columnsValues.Field(i).Set(reflect.Append(columnsValues.Field(i), hitValues.Field(i)))
 		}
 	}
 
-	payLoad, err := json.Marshal(data)
+	columnsData := []*data.ColumnData{}
+
+	columnsValues = reflect.ValueOf(*columns)
+	columnsTypes := columnsValues.Type()
+	for i := 0; i < columnsValues.NumField(); i++ {
+		columnsData = append(columnsData, &data.ColumnData{
+			Name:   columnsTypes.Field(i).Name,
+			Values: columnsValues.Field(i).Interface().([]string),
+		})
+	}
+
+	searchResponse := &data.SearchResponse{Data: &data.Data{Columns: columnsData, Total: response.Hits.Total.Value}}
+
+	payLoad, err := json.Marshal(searchResponse)
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+	}
 
 	w.Write(payLoad)
 

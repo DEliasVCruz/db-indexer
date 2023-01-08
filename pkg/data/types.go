@@ -1,6 +1,6 @@
 package data
 
-type ColumnData struct {
+type Columns struct {
 	From        []string `json:"from"`
 	To          []string `json:"to"`
 	Subject     []string `json:"subject"`
@@ -18,4 +18,19 @@ type ColumnData struct {
 	XOrigin     []string `json:"x_origin"`
 	XFilename   []string `json:"x_filename"`
 	Contents    []string `json:"contents"`
+}
+
+type SearchResponse struct {
+	Data  *Data  `json:"data"`
+	Error string `json:"error"`
+}
+
+type Data struct {
+	Columns []*ColumnData `json:"columns"`
+	Total   int           `json:"total"`
+}
+
+type ColumnData struct {
+	Name   string   `json:"name"`
+	Values []string `json:"values"`
 }
