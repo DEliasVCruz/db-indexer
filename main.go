@@ -18,7 +18,8 @@ func main() {
 		w.Write([]byte("Hello World!"))
 	})
 
-	r.Get("/index/{indexName}/search", handlers.SearchContents)
+	r.Get("/index/{indexName}/search", handlers.SearchField)
+	r.Post("/index/{indexName}/search", handlers.SearchAdvance)
 
 	http.ListenAndServe(":3000", r)
 }
