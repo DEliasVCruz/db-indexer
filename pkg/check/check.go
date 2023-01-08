@@ -1,6 +1,9 @@
 package check
 
-import "log"
+import (
+	"errors"
+	"log"
+)
 
 func Error(check string, err error) {
 	if err != nil {
@@ -18,4 +21,17 @@ func Error(check string, err error) {
 		}
 	}
 
+}
+
+func SearchStatus(status int) error {
+
+	switch status {
+	case 500:
+		log.Printf("server: could not find match with status %d", status)
+		return errors.New("could not find match")
+	case 200:
+		return nil
+	}
+	
+	return errors.New("index server error")
 }
