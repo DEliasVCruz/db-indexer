@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { ColumnData } from "@/globals/types";
 import TableColumnHeader from "./TableColumnHeader.vue";
 
 export interface Props {
-  columns?: { name: string; values: string[] }[];
+  columns?: Array<ColumnData>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
