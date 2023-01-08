@@ -20,6 +20,7 @@ const isHoveredRow = computed(() => props.rowId === row.hovered);
     }"
     @mouseover.passive="row.hover(props.rowId)"
     @mouseleave.passive="row.hover(0)"
+    @dblclick.prevent="row.render(props.rowId - 1)"
   >
     {{ props.value ? props.value : "-" }}
   </p>
