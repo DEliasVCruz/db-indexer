@@ -3,6 +3,7 @@ import { reactive } from "vue";
 import { columnData } from "@/globals/table";
 import { searchText } from "@/lib/search";
 import { results } from "@/globals/table";
+import { mainContent } from "@/globals/content";
 
 function search() {
   searchText(searchInput.text, "0", results.size.toString()).then((payload) => {
@@ -10,6 +11,7 @@ function search() {
     results.setTotalResults(payload.total);
     results.resetRange();
     columnData.set(payload.columns);
+    mainContent.setCurrent("ResultTable");
   });
 }
 
