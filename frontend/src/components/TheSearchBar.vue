@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 import { columnData } from "@/globals/table";
 import { searchText } from "@/lib/search";
 import { results } from "@/globals/table";
 import { mainContent } from "@/globals/content";
+import AdvanceSearch from "@/components/AdvanceSearch.vue";
+
+const advanceSearch = ref(false);
 
 function search() {
   searchText(searchInput.text, "0", results.size.toString()).then((payload) => {
@@ -13,6 +16,14 @@ function search() {
     columnData.set(payload.columns);
     mainContent.setCurrent("ResultTable");
   });
+}
+
+function toggleAdvanceSearch() {
+  if (!advanceSearch.value) {
+    advanceSearch.value = true;
+  } else {
+    advanceSearch.value = false;
+  }
 }
 
 const searchInput = reactive({
@@ -76,6 +87,7 @@ const searchInput = reactive({
     <span v-else class="mr-3 w-10"></span>
     <button
       class="mr-1 rounded-full bg-gray-200 bg-opacity-0 p-3 hover:bg-opacity-60"
+      @click.passive="toggleAdvanceSearch"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -88,5 +100,6 @@ const searchInput = reactive({
         />
       </svg>
     </button>
+    <AdvanceSearch v-if="advanceSearch" :search-text="searchInput.text" />
   </form>
 </template>
