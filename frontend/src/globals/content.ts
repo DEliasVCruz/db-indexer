@@ -1,7 +1,7 @@
 import { reactive } from "vue";
 
 export const mainContent = reactive({
-  current: "resultTable",
+  current: "ResultTable",
   setCurrent(content: string) {
     this.current = content;
   },
