@@ -1,5 +1,10 @@
 import { reactive } from "vue";
-import type { ColumnData, Columns, Results } from "@/globals/types";
+import {
+  SearchObject,
+  type ColumnData,
+  type Columns,
+  type Results,
+} from "@/globals/types";
 import { mainContent } from "@/globals/content";
 
 export const column = reactive({
@@ -15,7 +20,11 @@ export const results: Results = reactive({
   from: 1,
   to: 50,
   page: 1,
-  lastQuery: "",
+  lastQueryType: "",
+  lastQuery: {
+    simple: "",
+    advance: new SearchObject(),
+  },
   nextPage() {
     this.page += 1;
     this.from = this.size * (this.page - 1) + 1;

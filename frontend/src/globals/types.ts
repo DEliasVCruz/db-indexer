@@ -44,3 +44,28 @@ export interface Results {
   setTotalResults(arg: number): void;
   setEndRange(arg: number): void;
 }
+
+export class SearchObject implements AdvanceSearch {
+  pagination: {
+    from: number;
+    size: number;
+  };
+  queryData: {
+    from: string;
+    to: string;
+    subject: string;
+    contents: string;
+  };
+  constructor() {
+    this.pagination = {
+      from: 0,
+      size: 50,
+    };
+    this.queryData = {
+      from: "",
+      to: "",
+      subject: "",
+      contents: "",
+    };
+  }
+}
