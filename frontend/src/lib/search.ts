@@ -1,13 +1,23 @@
 import { request } from "@/lib/http";
 import type { SearchResponse } from "@/globals/types";
 
-export async function searchText(text: string, from: string, size: string) {
+export async function searchText(
+  text: string,
+  from: string,
+  size: string,
+  field: string
+) {
   const url = new URL("http://localhost:3000/index/emailsTest/search");
 
   const response = await request
     .get({
       endpoint: url,
-      params: new URLSearchParams({ q: text, from: from, size: size }),
+      params: new URLSearchParams({
+        q: text,
+        from: from,
+        size: size,
+        field: field,
+      }),
     })
     .catch((error: Error) => {
       return Promise.reject(error);

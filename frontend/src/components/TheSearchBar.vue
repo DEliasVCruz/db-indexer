@@ -9,13 +9,15 @@ import AdvanceSearch from "@/components/AdvanceSearch.vue";
 const advanceSearch = ref(false);
 
 function search() {
-  searchText(searchInput.text, "0", results.size.toString()).then((payload) => {
-    results.setLastQuery(searchInput.text);
-    results.setTotalResults(payload.total);
-    results.resetRange();
-    columnData.set(payload.columns);
-    mainContent.setCurrent("ResultTable");
-  });
+  searchText(searchInput.text, "0", results.size.toString(), "contents").then(
+    (payload) => {
+      results.setLastQuery(searchInput.text);
+      results.setTotalResults(payload.total);
+      results.resetRange();
+      columnData.set(payload.columns);
+      mainContent.setCurrent("ResultTable");
+    }
+  );
 }
 
 function toggleAdvanceSearch() {

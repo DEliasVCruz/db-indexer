@@ -106,7 +106,7 @@ func SearchField(w http.ResponseWriter, r *http.Request) {
 		Size: size,
 		Query: &search.QueryType{
 			Match: map[string]*search.Query{
-				"contents": {Text: queryParms.Get("q")},
+				queryParms.Get("field"): {Text: queryParms.Get("q")},
 			},
 		},
 	}
