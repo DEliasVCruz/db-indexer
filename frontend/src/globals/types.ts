@@ -24,6 +24,11 @@ export interface AdvanceSearch {
   };
 }
 
+export interface QueryType {
+  simple?: string;
+  advance?: AdvanceSearch;
+}
+
 export interface Columns {
   columns: Array<ColumnData>;
   set(arg: Array<ColumnData>): void;
@@ -36,11 +41,14 @@ export interface Results {
   from: number;
   to: number;
   page: number;
-  lastQuery: string | AdvanceSearch;
+  lastQueryType: string;
+  lastQuery: QueryType;
   nextPage(): void;
   prevPage(): void;
   resetRange(): void;
-  setLastQuery(arg: string): void;
+  setLastSimpleQuery(arg: string): void;
+  setLastAdvanceQuery(arg: AdvanceSearch): void;
+  setLastQueryType(arg: string): void;
   setTotalResults(arg: number): void;
   setEndRange(arg: number): void;
 }

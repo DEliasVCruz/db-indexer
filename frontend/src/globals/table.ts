@@ -59,8 +59,14 @@ export const results: Results = reactive({
     }
     this.page = 1;
   },
-  setLastQuery(newQuery) {
-    this.lastQuery = newQuery;
+  setLastSimpleQuery(newQuery) {
+    this.lastQuery.simple = newQuery;
+  },
+  setLastAdvanceQuery(newQuery) {
+    this.lastQuery.advance = newQuery;
+  },
+  setLastQueryType(queryType) {
+    this.lastQueryType = queryType;
   },
   setTotalResults(newTotal) {
     this.total = newTotal;
