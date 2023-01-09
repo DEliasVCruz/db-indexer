@@ -10,3 +10,37 @@ export interface SearchResponse {
   };
   error?: string;
 }
+
+export interface AdvanceSearch {
+  pagination: {
+    from: number;
+    size: number;
+  };
+  queryData: {
+    from: string;
+    to: string;
+    subject: string;
+    contents: string;
+  };
+}
+
+export interface Columns {
+  columns: Array<ColumnData>;
+  set(arg: Array<ColumnData>): void;
+  getRow(arg: number): Map<string, string>;
+}
+
+export interface Results {
+  total: number;
+  size: number;
+  from: number;
+  to: number;
+  page: number;
+  lastQuery: string | AdvanceSearch;
+  nextPage(): void;
+  prevPage(): void;
+  resetRange(): void;
+  setLastQuery(arg: string): void;
+  setTotalResults(arg: number): void;
+  setEndRange(arg: number): void;
+}

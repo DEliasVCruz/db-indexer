@@ -1,12 +1,6 @@
 import { reactive } from "vue";
-import type { ColumnData } from "@/globals/types";
+import type { ColumnData, Columns, Results } from "@/globals/types";
 import { mainContent } from "@/globals/content";
-
-interface Columns {
-  columns: Array<ColumnData>;
-  set(columns: Array<ColumnData>): void;
-  getRow(row: number): Map<string, string>;
-}
 
 export const column = reactive({
   selected: "Contents",
@@ -15,7 +9,7 @@ export const column = reactive({
   },
 });
 
-export const results = reactive({
+export const results: Results = reactive({
   total: 50,
   size: 50,
   from: 1,
@@ -56,13 +50,13 @@ export const results = reactive({
     }
     this.page = 1;
   },
-  setLastQuery(newQuery: string) {
+  setLastQuery(newQuery) {
     this.lastQuery = newQuery;
   },
-  setTotalResults(newTotal: number) {
+  setTotalResults(newTotal) {
     this.total = newTotal;
   },
-  setEndRange(newEnd: number) {
+  setEndRange(newEnd) {
     this.to = newEnd;
   },
 });
@@ -81,12 +75,12 @@ export const row = reactive({
 });
 
 export const columnData: Columns = reactive({
-  columns: new Array(),
-  set(columns: Array<ColumnData>) {
+  columns: new Array<ColumnData>(),
+  set(columns) {
     this.columns.length = 0;
     this.columns = columns;
   },
-  getRow(rowId: number) {
+  getRow(rowId) {
     const rowData: Map<string, string> = new Map();
     this.columns.forEach((column) => {
       rowData.set(column.name, column.values[rowId]);
