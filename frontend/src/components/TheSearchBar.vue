@@ -1,23 +1,28 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { columnData } from "@/globals/table";
-import { searchText } from "@/lib/search";
+import { search } from "@/lib/search";
 import { results } from "@/globals/table";
 import { mainContent } from "@/globals/content";
 import AdvanceSearch from "@/components/AdvanceSearch.vue";
 
 const advanceSearch = ref(false);
 
-function search() {
-  searchText(searchInput.text, "0", results.size.toString(), "contents").then(
-    (payload) => {
-      results.setLastQuery(searchInput.text);
-      results.setTotalResults(payload.total);
-      results.resetRange();
-      columnData.set(payload.columns);
-      mainContent.setCurrent("ResultTable");
-    }
-  );
+function searchField() {
+  search(
+    "simple",
+    { simple: searchInput.text },
+    "0",
+    results.size.toString(),
+    "contents"
+  ).then((payload) => {
+    results.setLastSimpleQuery(searchInput.text);
+    results.setLastQueryType("simple");
+    results.setTotalResults(payload.total);
+    results.resetRange();
+    columnData.set(payload.columns);
+    mainContent.setCurrent("ResultTable");
+  });
 }
 
 function toggleAdvanceSearch() {
@@ -64,7 +69,7 @@ const searchInput = reactive({
       type="text"
       name="search-box"
       placeholder="Search index"
-      @keyup.enter="search"
+      @keyup.enter="searchField"
     />
     <button
       v-if="searchInput.text != ''"

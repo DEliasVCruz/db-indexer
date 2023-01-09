@@ -1,27 +1,46 @@
 import { request } from "@/lib/http";
-import type { SearchResponse } from "@/globals/types";
+import type { QueryType, SearchResponse } from "@/globals/types";
 
-export async function searchText(
-  text: string,
+export async function search(
+  searchType: string,
+  searchQuery: QueryType,
   from: string,
   size: string,
   field: string
 ) {
   const url = new URL("http://localhost:3000/index/emailsTest/search");
 
-  const response = await request
-    .get({
-      endpoint: url,
-      params: new URLSearchParams({
-        q: text,
-        from: from,
-        size: size,
-        field: field,
-      }),
-    })
-    .catch((error: Error) => {
-      return Promise.reject(error);
-    });
+  let response: Response;
+
+  switch (searchType) {
+    case "simple":
+      if (typeof searchQuery.simple === "undefined") {
+        return Promise.reject(new Error("empty simple query"));
+      }
+      response = await request.get({
+        endpoint: url,
+        params: new URLSearchParams({
+          q: searchQuery.simple,
+          from: from,
+          size: size,
+          field: field,
+        }),
+      });
+      break;
+    case "advance":
+      if (typeof searchQuery.advance === "undefined") {
+        return Promise.reject(new Error("empty advance query object"));
+      }
+      response = await request.post({
+        endpoint: url,
+        body: searchQuery.advance,
+      });
+      break;
+    default:
+      return Promise.reject(
+        new Error(`${searchType} is not a valid search type`)
+      );
+  }
 
   const { data, error }: SearchResponse = await response.json();
   if (!response.ok) {

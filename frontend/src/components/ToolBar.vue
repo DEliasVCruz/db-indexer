@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { columnData, results } from "@/globals/table";
-import { searchText } from "@/lib/search";
+import { search } from "@/lib/search";
 import { computed } from "vue";
 import { mainContent } from "@/globals/content";
 
@@ -25,8 +25,9 @@ function nextPage() {
     return;
   }
   results.nextPage();
-  searchText(
-    results.lastQuery.toString(),
+  search(
+    results.lastQueryType,
+    results.lastQuery,
     (results.from - 1).toString(),
     results.size.toString(),
     "contents"
@@ -40,8 +41,9 @@ function prevPage() {
     return;
   }
   results.prevPage();
-  searchText(
-    results.lastQuery.toString(),
+  search(
+    results.lastQueryType,
+    results.lastQuery,
     (results.from - 1).toString(),
     results.size.toString(),
     "contents"
