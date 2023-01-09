@@ -26,7 +26,7 @@ function nextPage() {
   }
   results.nextPage();
   searchText(
-    results.lastQuery,
+    results.lastQuery.toString(),
     (results.from - 1).toString(),
     results.size.toString(),
     "contents"
@@ -41,7 +41,7 @@ function prevPage() {
   }
   results.prevPage();
   searchText(
-    results.lastQuery,
+    results.lastQuery.toString(),
     (results.from - 1).toString(),
     results.size.toString(),
     "contents"

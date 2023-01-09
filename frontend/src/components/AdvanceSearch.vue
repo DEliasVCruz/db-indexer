@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { reactive } from "vue";
 import { results } from "@/globals/table";
+import type { AdvanceSearch } from "@/globals/types";
 import SearchField from "./SearchField.vue";
 
 const props = defineProps<{
   searchText: string;
 }>();
 
-const searchFields = reactive({
+const searchFields: AdvanceSearch = reactive({
   pagination: {
     from: results.from - 1,
     size: results.size,
