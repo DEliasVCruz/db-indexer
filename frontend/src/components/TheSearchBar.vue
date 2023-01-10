@@ -26,11 +26,7 @@ function searchField() {
 }
 
 function toggleAdvanceSearch() {
-  if (!advanceSearch.value) {
-    advanceSearch.value = true;
-  } else {
-    advanceSearch.value = false;
-  }
+  advanceSearch.value = !advanceSearch.value;
 }
 
 const searchInput = reactive({
@@ -110,7 +106,8 @@ const searchInput = reactive({
     <AdvanceSearch
       v-if="advanceSearch"
       :search-text="searchInput.text"
-      @search="advanceSearch = false"
+      @search="toggleAdvanceSearch"
+      @close="toggleAdvanceSearch"
     />
   </form>
 </template>

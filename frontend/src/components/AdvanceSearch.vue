@@ -43,9 +43,21 @@ const emit = defineEmits<{
     <div
       class="flex w-[60vw] min-w-full max-w-[763px] flex-col gap-4 py-5 pl-5 pr-7"
     >
-      <SearchField v-model="searchFields.from" :field="'From'" />
-      <SearchField v-model="searchFields.to" :field="'To'" />
-      <SearchField v-model="searchFields.subject" :field="'Subject'" />
+      <SearchField
+        v-model="searchFields.from"
+        :field="'From'"
+        @submit="searchAdvance"
+      />
+      <SearchField
+        v-model="searchFields.to"
+        :field="'To'"
+        @submit="searchAdvance"
+      />
+      <SearchField
+        v-model="searchFields.subject"
+        :field="'Subject'"
+        @submit="searchAdvance"
+      />
       <div class="relative h-6">
         <button
           class="absolute right-0 h-8 w-20 p-1"

@@ -6,6 +6,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (event: "update:modelValue", payload: string): void;
+  (event: "submit"): void;
 }>();
 </script>
 
@@ -23,6 +24,7 @@ const emit = defineEmits<{
       @input="
         emit('update:modelValue', ($event.target as HTMLInputElement).value)
       "
+      @keyup.enter="emit('submit')"
     />
   </div>
 </template>
