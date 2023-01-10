@@ -1,11 +1,16 @@
 import { request } from "@/lib/http";
-import type { QueryType, SearchResponse } from "@/globals/types";
+import {
+  Pagination,
+  SearchObject,
+  type QueryType,
+  type SearchResponse,
+} from "@/globals/types";
 
 export async function search(
   searchType: string,
   searchQuery: QueryType,
-  from: string,
-  size: string,
+  from: number,
+  size: number,
   field: string
 ) {
   const url = new URL("http://localhost:3000/index/emailsTest/search");
@@ -21,8 +26,8 @@ export async function search(
         endpoint: url,
         params: new URLSearchParams({
           q: searchQuery.simple,
-          from: from,
-          size: size,
+          from: (from - 1).toString(),
+          size: size.toString(),
           field: field,
         }),
       });
@@ -33,7 +38,10 @@ export async function search(
       }
       response = await request.post({
         endpoint: url,
-        body: searchQuery.advance,
+        body: new SearchObject(
+          new Pagination(from - 1, size),
+          searchQuery.advance
+        ),
       });
       break;
     default:

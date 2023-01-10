@@ -12,8 +12,8 @@ function searchField() {
   search(
     "simple",
     { simple: searchInput.text },
-    "0",
-    results.size.toString(),
+    results.from,
+    results.size,
     "contents"
   ).then((payload) => {
     results.setLastSimpleQuery(searchInput.text);

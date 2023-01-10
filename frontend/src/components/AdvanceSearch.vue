@@ -17,8 +17,8 @@ function searchAdvance() {
   search(
     "advance",
     { advance: searchFields },
-    "0",
-    results.size.toString(),
+    results.from,
+    results.size,
     "contents"
   ).then((payload) => {
     results.setLastAdvanceQuery(searchFields);

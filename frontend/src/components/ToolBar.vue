@@ -28,8 +28,8 @@ function nextPage() {
   search(
     results.lastQueryType,
     results.lastQuery,
-    (results.from - 1).toString(),
-    results.size.toString(),
+    results.from,
+    results.size,
     "contents"
   ).then((payload) => {
     columnData.set(payload.columns);
@@ -44,8 +44,8 @@ function prevPage() {
   search(
     results.lastQueryType,
     results.lastQuery,
-    (results.from - 1).toString(),
-    results.size.toString(),
+    results.from,
+    results.size,
     "contents"
   ).then((payload) => {
     columnData.set(payload.columns);
