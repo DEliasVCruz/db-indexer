@@ -8,8 +8,8 @@ import {
 import { mainContent } from "@/globals/content";
 
 export const column = reactive({
-  selected: "Contents",
-  select(column: string) {
+  selected: 0,
+  select(column: number) {
     this.selected = column;
   },
 });

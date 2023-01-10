@@ -10,9 +10,10 @@ const props = defineProps<{
 <template>
   <div class="flex min-w-max cursor-pointer flex-row">
     <TableColumnHeader
-      v-for="column in props.columns"
+      v-for="(column, index) in props.columns"
       :key="column.name"
       :title="column.name"
+      :column-id="index"
     />
   </div>
 </template>
