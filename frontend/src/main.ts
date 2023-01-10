@@ -1,12 +1,12 @@
 import { createApp } from "vue";
-import LandingApp from "./app/LandingApp.vue";
-import AboutPage from "./app/AboutPage.vue";
-import IndexExplorer from "./app/IndexExplorer.vue";
+import LandingPage from "./routes/LandingPage.vue";
+import AboutPage from "./routes/AboutPage.vue";
+import ExplorerApp from "./routes/ExplorerApp.vue";
 import "./main.css";
 
-const landing = createApp(LandingApp);
+const landing = createApp(LandingPage);
 const about = createApp(AboutPage);
-const maildir = createApp(IndexExplorer);
+const maildir = createApp(ExplorerApp);
 
 landing.mount("#landing");
 about.mount("#about");
