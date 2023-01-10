@@ -11,22 +11,26 @@ export interface SearchResponse {
   error?: string;
 }
 
+export interface QueryData {
+  from: string;
+  to: string;
+  subject: string;
+  contents: string;
+}
+
+export interface Pager {
+  from: number;
+  size: number;
+}
+
 export interface AdvanceSearch {
-  pagination: {
-    from: number;
-    size: number;
-  };
-  queryData: {
-    from: string;
-    to: string;
-    subject: string;
-    contents: string;
-  };
+  pagination: Pager;
+  queryData: QueryData;
 }
 
 export interface QueryType {
   simple?: string;
-  advance?: AdvanceSearch;
+  advance?: QueryData;
 }
 
 export interface Columns {
@@ -47,7 +51,7 @@ export interface Results {
   prevPage(): void;
   resetRange(): void;
   setLastSimpleQuery(arg: string): void;
-  setLastAdvanceQuery(arg: AdvanceSearch): void;
+  setLastAdvanceQuery(arg: QueryData): void;
   setLastQueryType(arg: string): void;
   setTotalResults(arg: number): void;
   setEndRange(arg: number): void;
