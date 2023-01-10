@@ -2,17 +2,9 @@
 import TableColumn from "@/components/TableColumn.vue";
 import type { ColumnData } from "@/globals/types";
 
-export interface Props {
-  columns?: Array<ColumnData>;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  columns: () => [
-    { name: "From", values: ["Empty", "Empty", "Empty"] },
-    { name: "Subject", values: ["Empty", "Empty", "Empty"] },
-    { name: "Contents", values: ["Empty", "Empty", "Empty"] },
-  ],
-});
+const props = defineProps<{
+  columns: Array<ColumnData>;
+}>();
 </script>
 
 <template>
