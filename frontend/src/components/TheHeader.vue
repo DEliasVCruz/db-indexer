@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { mainContent } from "@/globals/content";
 import TheSearchBar from "../components/TheSearchBar.vue";
 
 const props = defineProps<{
@@ -32,9 +33,12 @@ const emit = defineEmits<{
               d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
             />
           </svg>
-        </div>
-        <div class="inline-flex items-center gap-x-1">
-          <div class="hidden sm:inline-block">
+        </button>
+        <div
+          class="inline-flex items-center gap-x-1"
+          @click.prevent="mainContent.setCurrent('ResultTable')"
+        >
+          <div class="hidden cursor-pointer sm:inline-block">
             <svg
               class="h-7 w-7"
               fill="none"

@@ -54,7 +54,7 @@ function prevPage() {
 </script>
 
 <template>
-  <div class="flex h-9 flex-row bg-green-300 py-1">
+  <div class="flex h-9 flex-row py-1">
     <button
       class="ml-2 rounded-full bg-gray-200 bg-opacity-0 pr-1 pl-1 hover:bg-opacity-60"
       :class="{ hidden: !isMailView }"
@@ -75,7 +75,10 @@ function prevPage() {
         />
       </svg>
     </button>
-    <div class="flex flex-row" :class="{ hidden: !isResultTable }">
+    <div
+      class="ml-auto mr-5 flex w-fit flex-row"
+      :class="{ hidden: !isResultTable }"
+    >
       <div class="mx-3 p-1.5 align-middle text-xs text-gray-700">
         {{ `${results.from} - ${results.to} of ${results.total}` }}
       </div>
