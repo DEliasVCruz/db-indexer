@@ -18,5 +18,8 @@ indexer
 # Go workspace file
 go.work
 
+# Static build files
+static/
+
 # Input data
 enron_mail_20110402/
