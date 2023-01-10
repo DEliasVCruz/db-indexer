@@ -14,6 +14,7 @@ export default defineConfig({
         about: resolve(__dirname, "about/index.html"),
       },
     },
+    outDir: "../static",
   },
   plugins: [vue()],
   resolve: {
