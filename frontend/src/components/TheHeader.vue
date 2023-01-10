@@ -4,14 +4,19 @@ import TheSearchBar from "../components/TheSearchBar.vue";
 const props = defineProps<{
   searchBar: boolean;
 }>();
+
+const emit = defineEmits<{
+  (e: "toggle"): void;
+}>();
 </script>
 
 <template>
   <header class="h-15 top-0 left-0 right-0 w-screen flex-none bg-blue-900">
     <div class="flex h-full w-full flex-row p-2 sm:gap-x-5">
-      <div class="flex h-full grow flex-row gap-x-2 sm:grow-0">
-        <div
+      <div class="flex h-full grow flex-row gap-x-5 sm:grow-0">
+        <button
           class="w-full rounded-full bg-gray-500 bg-opacity-0 pt-3 transition-all duration-150 ease-linear hover:bg-opacity-20 sm:w-fit sm:p-3"
+          @click.prevent="emit('toggle')"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
