@@ -25,10 +25,15 @@ function searchAdvance() {
     results.setLastQueryType("advance");
     results.setTotalResults(payload.total);
     results.resetRange();
+    emit("search");
     columnData.set(payload.columns);
     mainContent.setCurrent("ResultTable");
   });
 }
+
+const emit = defineEmits<{
+  (e: "search"): void;
+}>();
 </script>
 
 <template>

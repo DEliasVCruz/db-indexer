@@ -107,6 +107,10 @@ const searchInput = reactive({
         />
       </svg>
     </button>
-    <AdvanceSearch v-if="advanceSearch" :search-text="searchInput.text" />
+    <AdvanceSearch
+      v-if="advanceSearch"
+      :search-text="searchInput.text"
+      @search="advanceSearch = false"
+    />
   </form>
 </template>
