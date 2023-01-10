@@ -1,6 +1,6 @@
 import { reactive } from "vue";
 import {
-  SearchObject,
+  MultiFieldQuery,
   type ColumnData,
   type Columns,
   type Results,
@@ -23,7 +23,7 @@ export const results: Results = reactive({
   lastQueryType: "",
   lastQuery: {
     simple: "",
-    advance: new SearchObject(),
+    advance: new MultiFieldQuery(),
   },
   nextPage() {
     this.page += 1;

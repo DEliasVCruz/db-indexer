@@ -57,27 +57,33 @@ export interface Results {
   setEndRange(arg: number): void;
 }
 
+export class Pagination implements Pager {
+  constructor(public from = 0, public size = 50) {
+    this.from = from;
+    this.size = size;
+  }
+}
+
+export class MultiFieldQuery implements QueryData {
+  constructor(
+    public from = "",
+    public to = "",
+    public subject = "",
+    public contents = ""
+  ) {
+    this.from = from;
+    this.to = to;
+    this.subject = subject;
+    this.contents = contents;
+  }
+}
+
 export class SearchObject implements AdvanceSearch {
-  pagination: {
-    from: number;
-    size: number;
-  };
-  queryData: {
-    from: string;
-    to: string;
-    subject: string;
-    contents: string;
-  };
-  constructor() {
-    this.pagination = {
-      from: 0,
-      size: 50,
-    };
-    this.queryData = {
-      from: "",
-      to: "",
-      subject: "",
-      contents: "",
-    };
+  constructor(
+    public pagination = new Pagination(),
+    public queryData = new MultiFieldQuery()
+  ) {
+    this.pagination = pagination;
+    this.queryData = queryData;
   }
 }
