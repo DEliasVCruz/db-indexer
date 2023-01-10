@@ -3,6 +3,7 @@ import SideBarOption from "./SideBarOption.vue";
 import IconDirectory from "./IconDirectory.vue";
 import IconIndex from "./IconIndex.vue";
 import { reactive } from "vue";
+import { mainSection } from "@/globals/section";
 
 const props = defineProps<{
   show: boolean;
@@ -12,6 +13,10 @@ const options = reactive([
   { component: IconIndex, name: "Index" },
   { component: IconDirectory, name: "Dirs" },
 ]);
+
+function navigateTo(section: string) {
+  mainSection.setCurrent(section);
+}
 </script>
 
 <template>
@@ -24,6 +29,7 @@ const options = reactive([
         v-for="option in options"
         :key="option.name"
         :tooltip-text="option.name"
+        @navigate="navigateTo"
       >
         <component :is="option.component"></component>
       </SideBarOption>
