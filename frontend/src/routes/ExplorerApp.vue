@@ -20,7 +20,11 @@ const contents = {
 
 <template>
   <div class="outer-layer">
-    <TheHeader :search-bar="true" @toggle="showSidebar = !showSidebar" />
+    <TheHeader
+      :side-bar="true"
+      :search-bar="true"
+      @toggle="showSidebar = !showSidebar"
+    />
     <div class="flex h-[85.5vh] w-screen flex-row gap-1">
       <SideBar :show="showSidebar" />
       <main
