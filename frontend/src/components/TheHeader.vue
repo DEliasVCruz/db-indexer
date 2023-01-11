@@ -4,6 +4,7 @@ import TheSearchBar from "../components/TheSearchBar.vue";
 
 const props = defineProps<{
   searchBar: boolean;
+  sideBar: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -17,6 +18,7 @@ const emit = defineEmits<{
       <div class="flex h-full grow flex-row gap-x-5 sm:grow-0">
         <button
           class="w-full rounded-full bg-gray-500 bg-opacity-0 pt-3 transition-all duration-150 ease-linear hover:bg-opacity-20 sm:w-fit sm:p-3"
+          :class="{ hidden: sideBar }"
           @click.prevent="emit('toggle')"
         >
           <svg

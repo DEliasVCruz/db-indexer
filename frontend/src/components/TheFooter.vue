@@ -14,7 +14,7 @@
     <ul class="flex flex-row flex-wrap justify-center md:justify-end">
       <li>
         <a
-          href="/about/index.html"
+          href="/about"
           class="py-1 px-3 text-sm font-semibold text-white hover:text-gray-400"
           >About</a
         >
