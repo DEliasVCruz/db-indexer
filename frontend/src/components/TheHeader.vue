@@ -2,6 +2,13 @@
 import { mainContent } from "@/globals/content";
 import TheSearchBar from "../components/TheSearchBar.vue";
 
+function goToMain() {
+  mainContent.setCurrent("ResultTable");
+  const prevUrl = new URL(window.location.toString());
+  const mainUrl = new URL(prevUrl.origin);
+  window.location.href = mainUrl.toString();
+}
+
 const props = defineProps<{
   searchBar: boolean;
   sideBar: boolean;
@@ -37,10 +44,10 @@ const emit = defineEmits<{
           </svg>
         </button>
         <div
-          class="inline-flex items-center gap-x-1"
-          @click.prevent="mainContent.setCurrent('ResultTable')"
+          class="inline-flex cursor-pointer items-center gap-x-1"
+          @click.prevent="goToMain"
         >
-          <div class="hidden cursor-pointer sm:inline-block">
+          <div class="hidden sm:inline-block">
             <svg
               class="h-7 w-7"
               fill="none"
