@@ -84,10 +84,7 @@ function prevPage() {
       </div>
       <button
         class="rounded-full bg-gray-200 bg-opacity-0 pr-2 pl-1"
-        :class="{
-          'hover:bg-opacity-60': !isFirstPage,
-          'cursor-default': isFirstPage,
-        }"
+        :class="isFirstPage ? 'cursor-default' : 'hover:bg-opacity-60'"
         @click="prevPage"
       >
         <svg
@@ -108,10 +105,7 @@ function prevPage() {
       </button>
       <button
         class="rounded-full bg-gray-200 bg-opacity-0 pl-2 pr-1"
-        :class="{
-          'hover:bg-opacity-60': !isLastPage,
-          'cursor-default': isLastPage,
-        }"
+        :class="isLastPage ? 'cursor-default' : 'hover:bg-opacity-60'"
         @click="nextPage"
       >
         <svg

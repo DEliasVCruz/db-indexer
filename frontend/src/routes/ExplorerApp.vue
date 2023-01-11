@@ -29,7 +29,7 @@ const contents = {
       <SideBar :show="showSidebar" />
       <main
         class="z-0 m-4 flex flex-initial flex-col rounded-3xl border-2 p-2"
-        :class="{ 'w-[98%]': !showSidebar, 'w-[94%]': showSidebar }"
+        :class="showSidebar ? 'w-[94%]' : 'w-[98%]'"
       >
         <ToolBar />
         <div class="h-[94%] overflow-x-auto">
