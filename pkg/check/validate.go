@@ -19,3 +19,10 @@ func ParamsOf(endpoint string, params url.Values) error {
 
 	return nil
 }
+
+func ValidPort(port int) error {
+	if port < 1023 || port > 65535 {
+		return errors.New("Invalid port number")
+	}
+	return nil
+}

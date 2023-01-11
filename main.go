@@ -1,14 +1,31 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
+
+	var port int
+	flag.IntVar(&port, "port", 8000, "port to set the app server to listen to")
+	flag.Parse()
+
+	if err := check.ValidPort(port); err != nil {
+		fmt.Println(err.Error())
+		fmt.Println("Provide a port number between 1023 and 65535")
+		os.Exit(1)
+	}
+
+	ipAddr := check.GetIP()
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -33,5 +50,6 @@ func main() {
 
 	handlers.FileServer(r, "/assets", http.Dir("./static/assets"))
 
-	http.ListenAndServe(":3000", r)
+	fmt.Printf("Server is running at http://%s:%d\n", ipAddr.String(), port)
+	http.ListenAndServe(fmt.Sprintf(":%d", port), r)
 }
