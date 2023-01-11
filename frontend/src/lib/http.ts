@@ -1,13 +1,14 @@
 import type { AdvanceSearch } from "@/globals/types";
 
-interface GetParams {
+interface RequestParams {
   endpoint: URL;
-  params?: URLSearchParams;
-  body?: AdvanceSearch;
+  urlParams?: URLSearchParams;
+  bodyPayload?: AdvanceSearch;
+  dataTransfer?: FormData;
 }
 
 export const request = {
-  async get({ endpoint, params }: GetParams) {
+  async get({ endpoint, urlParams: params }: RequestParams) {
     let url: URL;
 
     if (typeof params !== "undefined") {
@@ -18,7 +19,8 @@ export const request = {
 
     return fetch(url);
   },
-  async post({ endpoint, body }: GetParams) {
+
+  async post({ endpoint, bodyPayload: body }: RequestParams) {
     if (typeof body === "undefined") {
       return Promise.reject(new Error("no request body was supplied"));
     }

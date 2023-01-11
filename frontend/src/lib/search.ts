@@ -24,7 +24,7 @@ export async function search(
       }
       response = await request.get({
         endpoint: url,
-        params: new URLSearchParams({
+        urlParams: new URLSearchParams({
           q: searchQuery.simple,
           from: (from - 1).toString(),
           size: size.toString(),
@@ -38,7 +38,7 @@ export async function search(
       }
       response = await request.post({
         endpoint: url,
-        body: new SearchObject(
+        bodyPayload: new SearchObject(
           new Pagination(from - 1, size),
           searchQuery.advance
         ),
