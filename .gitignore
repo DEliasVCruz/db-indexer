@@ -5,6 +5,7 @@
 *.so
 *.dylib
 indexer
+mailsind
 
 # Test binary, built with `go test -c`
 *.test

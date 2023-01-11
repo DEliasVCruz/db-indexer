@@ -15,6 +15,7 @@ export default defineConfig({
       },
     },
     outDir: "../static",
+    emptyOutDir: true,
   },
   plugins: [vue()],
   resolve: {

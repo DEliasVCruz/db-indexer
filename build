@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "Starting build"
+cd frontend || (echo "could not enter frontend" && exit)
+echo "Entering frontend folder"
+npm run build || (echo "could not build static assets" && exit)
+echo "Created static files build"
+cd ..
+echo "Back to root folder"
+go build -v -o mailsind || (echo "could not build app server" && exit)
+echo "Created app server build"
