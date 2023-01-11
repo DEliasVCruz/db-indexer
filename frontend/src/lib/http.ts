@@ -33,4 +33,15 @@ export const request = {
       body: JSON.stringify(body),
     });
   },
+
+  async put({ endpoint, dataTransfer: data }: RequestParams) {
+    if (typeof data === "undefined") {
+      return Promise.reject(new Error("no request body was supplied"));
+    }
+
+    return fetch(endpoint, {
+      method: "PUT",
+      body: data,
+    });
+  },
 };
