@@ -3,13 +3,13 @@ import { reactive } from "vue";
 
 function handleInput(e: Event) {
   const files = (e.target as HTMLInputElement).files as FileList;
-  emit("upload", [...files]);
+  emit("upload", files[0]);
 }
 
 function handleDrop(e: Event) {
   hover.toggle();
   const files = (e as DragEvent).dataTransfer?.files as FileList;
-  emit("upload", [...files]);
+  emit("upload", files[0]);
 }
 
 const hover = reactive({
@@ -20,7 +20,7 @@ const hover = reactive({
 });
 
 const emit = defineEmits<{
-  (e: "upload", files: File[]): void;
+  (e: "upload", files: File): void;
 }>();
 </script>
 

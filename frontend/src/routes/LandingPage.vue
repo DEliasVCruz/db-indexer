@@ -2,6 +2,19 @@
 import LandingHeader from "../components/LandingHeader.vue";
 import TheFooter from "../components/TheFooter.vue";
 import DropZone from "../components/DropZone.vue";
+import { request } from "@/lib/http";
+
+async function uploadFile(file: File) {
+  const data = new FormData();
+  data.append("file", file, file.name);
+  const response = await request.put({
+    endpoint: new URL("http://localhost:3000/upload"),
+    dataTransfer: data,
+  });
+
+  const result = await response.json();
+  alert(result.message);
+}
 </script>
 
 <template>
@@ -9,9 +22,9 @@ import DropZone from "../components/DropZone.vue";
     <LandingHeader />
     <main>
       <div class="flex flex-col items-center justify-center gap-2 pt-20">
-        <DropZone class="mx-5 h-52 w-80 sm:w-96" />
+        <DropZone class="mx-5 h-52 w-80 sm:w-96" @upload="uploadFile" />
         <span class="text-sm font-thin"
-          >Allowed: gz, zip, tar | Max-Size: 500MB</span
+          >Allowed: tgz, zip, tar | Max-Size: 500MB</span
         >
       </div>
     </main>
