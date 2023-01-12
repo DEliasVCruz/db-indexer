@@ -38,7 +38,7 @@ func (i Indexer) Index() {
 	i.wg = &sync.WaitGroup{}
 
 	i.wg.Add(2)
-	go i.findFiles(os.DirFS(i.DataFolder), records)
+	go i.extractFS(os.DirFS(i.DataFolder), records)
 	go i.collectRecords(records)
 
 	i.wg.Wait()
@@ -99,15 +99,18 @@ func (i Indexer) extractFS(directory fs.FS, writeCh chan<- map[string]string) {
 	var wg sync.WaitGroup
 	fs.WalkDir(directory, ".", func(childPath string, dir fs.DirEntry, err error) error {
 
-		fullPath := filepath.Join(i.DataFolder, childPath)
 		if err != nil {
-			zinc.LogError("appLogs", fmt.Sprintf("failed to read path %s", fullPath), err.Error())
+			go zinc.LogError(
+				"appLogs",
+				fmt.Sprintf("failed to read path %s", childPath),
+				err.Error(),
+			)
 			return nil
 		}
 
 		if !dir.IsDir() {
 			wg.Add(1)
-			go data.Extract(fullPath, writeCh, &wg)
+			go i.extract(&data.DataInfo{RelPath: childPath}, writeCh, &wg)
 		}
 
 		return nil
