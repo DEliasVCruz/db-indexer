@@ -21,6 +21,7 @@ type Indexer struct {
 	Config     []byte
 	FileType   string
 	ZipFolder  *zip.ReadCloser
+	Archive    io.Reader
 	wg         *sync.WaitGroup
 }
 
@@ -38,7 +39,12 @@ func (i Indexer) Index() {
 	i.wg = &sync.WaitGroup{}
 
 	i.wg.Add(2)
-	go i.extractFS(os.DirFS(i.DataFolder), records)
+	switch i.FileType {
+	case "tar":
+		go i.extractTAR(i.Archive, records)
+	default:
+		go i.extractFS(os.DirFS(i.DataFolder), records)
+	}
 	go i.collectRecords(records)
 
 	i.wg.Wait()
