@@ -1,15 +1,18 @@
-package data
+package index
 
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
+	"github.com/DEliasVCruz/db-indexer/pkg/data"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
@@ -20,11 +23,34 @@ var messageRegex = regexp.MustCompile(`^<(\d+\.\d+)\..*`)
 var fieldMetadataFlag = "x_filename"
 var specialChars = [8]string{"-", "_", " ", "\n", ";", "=", `\`, "/"}
 
-func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
+func (i Indexer) extract(data *data.DataInfo, ch chan<- map[string]string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	input, err := os.Open(path)
+	var input io.ReadCloser
+	var err error
+	var path string
+
+	switch i.FileType {
+	case "zip":
+		path = data.RelPath
+		input, err = i.ZipFolder.Open(path)
+	case "tar":
+		path = data.TarBuf.Header.Name
+		input, err = data.OpenTar()
+	default:
+		path = filepath.Join(i.DataFolder, data.RelPath)
+		input, err = os.Open(path)
+	}
+
 	check.Error("fileOpen", err)
+	if err != nil {
+		go zinc.LogError(
+			"appLogs",
+			fmt.Sprintf("failed to open file at path %s", path),
+			err.Error(),
+		)
+		return
+	}
 	defer input.Close()
 
 	fields := make(map[string]string)
@@ -61,10 +87,10 @@ func Extract(path string, ch chan<- map[string]string, wg *sync.WaitGroup) {
 
 	log.Printf("data: failed to extract data at path %s", path)
 	if scanner.Err() != nil {
-		zinc.LogError("appLogs", fmt.Sprintf("scanning failure at path %s", path), scanner.Err().Error())
+		go zinc.LogError("appLogs", fmt.Sprintf("scanning failure at path %s", path), scanner.Err().Error())
 		return
 	}
-	zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
+	go zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
 }
 
 func process(fields map[string]string) map[string]string {

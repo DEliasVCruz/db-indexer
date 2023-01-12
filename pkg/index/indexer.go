@@ -1,11 +1,14 @@
 package index
 
 import (
+	"archive/tar"
+	"archive/zip"
+	"bytes"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
@@ -16,6 +19,8 @@ type Indexer struct {
 	Name       string
 	DataFolder string
 	Config     []byte
+	FileType   string
+	ZipFolder  *zip.ReadCloser
 	wg         *sync.WaitGroup
 }
 
@@ -39,7 +44,56 @@ func (i Indexer) Index() {
 	i.wg.Wait()
 }
 
-func (i Indexer) findFiles(directory fs.FS, writeCh chan<- map[string]string) {
+func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- map[string]string) {
+	tr := tar.NewReader(archive)
+
+	var wg sync.WaitGroup
+	done := false
+
+	for {
+
+		header, err := tr.Next()
+
+		switch {
+		case err == io.EOF:
+			done = true
+		case err != nil:
+			go zinc.LogError(
+				"appLogs",
+				fmt.Sprintf("failed to read path %s", header.Name),
+				err.Error(),
+			)
+			continue
+		}
+
+		if done {
+			break
+		}
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			break
+		case tar.TypeReg:
+			buf := new(bytes.Buffer)
+			_, err := buf.ReadFrom(tr)
+			go i.extract(
+				&data.DataInfo{
+					TarBuf: &data.TarBuf{Buffer: buf, Header: header},
+					Err:    err},
+				writeCh,
+				&wg,
+			)
+
+		}
+
+	}
+
+	wg.Wait()
+	close(writeCh)
+
+}
+
+func (i Indexer) extractFS(directory fs.FS, writeCh chan<- map[string]string) {
 	defer i.wg.Done()
 
 	var wg sync.WaitGroup

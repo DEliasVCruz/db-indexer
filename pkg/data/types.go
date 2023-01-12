@@ -34,3 +34,14 @@ type ColumnData struct {
 	Name   string   `json:"name"`
 	Values []string `json:"values"`
 }
+
+type DataInfo struct {
+	RelPath string
+	TarBuf  *TarBuf
+	Err     error
+}
+
+type TarBuf struct {
+	Buffer *bytes.Buffer
+	Header *tar.Header
+}
