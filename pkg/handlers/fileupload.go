@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 )
 
@@ -53,9 +52,11 @@ func FileUpload(w http.ResponseWriter, r *http.Request) {
 		filetype = "application/tar"
 	}
 
-	payload, _ := json.Marshal(`{"message": "file succesfully uploaded"}`)
+	response, err := json.Marshal(&FileUploaded{Uploaded: true, State: "processing"})
+	if err != nil {
+		http.Error(w, "server marshaling failed", http.StatusInternalServerError)
+	}
 
-	log.Printf("The file uploaded is %s\n", filetype)
-	w.Write(payload)
+	w.Write(response)
 
 }

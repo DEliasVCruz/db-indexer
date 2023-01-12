@@ -1,5 +1,10 @@
 package data
 
+import (
+	"archive/tar"
+	"bytes"
+)
+
 type Columns struct {
 	From        []string `json:"from"`
 	To          []string `json:"to"`
