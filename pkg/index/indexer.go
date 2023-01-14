@@ -38,22 +38,22 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 	switch filetype {
 	case "x-gzip":
 
-		archive, err := gzip.NewReader(form.File)
+		archive, err := gzip.NewReader(upload.File)
 		if err != nil {
 			log.Println(err.Error())
 		}
 		defer archive.Close()
 
-		i.archive = archive
+		i.archive = tar.NewReader(archive)
 
 	case "tar":
 
-		archive := tar.NewReader(form.File)
+		archive := tar.NewReader(upload.File)
 		i.archive = archive
 
 	case "zip":
 
-		zipFile, err := zip.NewReader(form.File, form.Size)
+		zipFile, err := zip.NewReader(upload.File, upload.Size)
 		if err != nil {
 			return
 		}
@@ -64,7 +64,7 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 		i.dataFolder = os.DirFS(upload.Folder)
 
 	default:
-		log.Printf("No matching indexer for filetype %s", filetype)
+		log.Printf("No matching indexer for filetype %s\n", filetype)
 	}
 
 	i.index()
@@ -81,12 +81,10 @@ func (i Indexer) index() {
 
 	records := make(chan map[string]string)
 
-	i.wg = &sync.WaitGroup{}
-
 	i.wg.Add(2)
 	switch i.FileType {
 	case "tar":
-		go i.extractTAR(i.Archive, records)
+		go i.extractTAR(i.archive, records)
 	default:
 		go i.extractFS(i.dataFolder, records)
 	}

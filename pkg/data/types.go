@@ -52,7 +52,8 @@ type TarBuf struct {
 	Header *tar.Header
 }
 
-type FormFile struct {
-	File multipart.File
-	Size int64
+type UploadData struct {
+	File   multipart.File
+	Size   int64
+	Folder string
 }
