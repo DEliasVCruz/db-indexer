@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	"io"
 	"io/fs"
@@ -20,12 +21,52 @@ type Indexer struct {
 	DataFolder string
 	Config     []byte
 	FileType   string
-	ZipFolder  *zip.ReadCloser
-	Archive    io.Reader
+	zipFolder  *zip.Reader
+	archive    io.Reader
 	wg         *sync.WaitGroup
 }
 
-func (i Indexer) Index() {
+func NewIndex(name, filetype, dataFolder string, form *data.FormFile) {
+	defer form.File.Close()
+
+	i := &Indexer{}
+
+	i.Name = name
+	i.DataFolder = dataFolder
+	i.FileType = filetype
+
+	i.wg = &sync.WaitGroup{}
+
+	switch filetype {
+	case "x-gzip":
+
+		archive, err := gzip.NewReader(form.File)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		defer archive.Close()
+
+		i.archive = archive
+
+	case "tar":
+
+		archive := tar.NewReader(form.File)
+		i.archive = archive
+
+	case "zip":
+
+		zipFile, err := zip.NewReader(form.File, form.Size)
+		if err != nil {
+			return
+		}
+		i.zipFolder = zipFile
+
+	}
+
+	i.index()
+}
+
+func (i Indexer) index() {
 	if zinc.ExistsIndex(i.Name) == 200 {
 		log.Printf("index: %s index already exists", i.Name)
 	} else {

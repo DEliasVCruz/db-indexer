@@ -31,12 +31,12 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- map[string]string, wg *s
 	var path string
 
 	switch i.FileType {
-	case "zip":
-		path = data.RelPath
-		input, err = i.ZipFolder.Open(path)
 	case "tar":
 		path = data.TarBuf.Header.Name
 		input, err = data.OpenTar()
+	case "zip":
+		path = data.RelPath
+		input, err = i.zipFolder.Open(path)
 	default:
 		path = filepath.Join(i.DataFolder, data.RelPath)
 		input, err = os.Open(path)
