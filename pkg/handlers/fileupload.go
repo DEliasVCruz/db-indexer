@@ -62,8 +62,7 @@ func FileUpload(w http.ResponseWriter, r *http.Request) {
 	go index.NewIndex(
 		"My Index",
 		strings.TrimPrefix(filetype, "application/"),
-		"",
-		&data.FormFile{File: file, Size: fh.Size},
+		&data.UploadData{File: file, Size: fh.Size},
 	)
 
 	response, err := json.Marshal(&FileUploaded{Uploaded: true, State: "processing"})

@@ -18,21 +18,19 @@ import (
 
 type Indexer struct {
 	Name       string
-	DataFolder string
+	dataFolder fs.FS
 	Config     []byte
 	FileType   string
-	zipFolder  *zip.Reader
 	archive    io.Reader
 	wg         *sync.WaitGroup
 }
 
-func NewIndex(name, filetype, dataFolder string, form *data.FormFile) {
-	defer form.File.Close()
+func NewIndex(name, filetype string, upload *data.UploadData) {
+	defer upload.File.Close()
 
 	i := &Indexer{}
 
 	i.Name = name
-	i.DataFolder = dataFolder
 	i.FileType = filetype
 
 	i.wg = &sync.WaitGroup{}
@@ -59,8 +57,14 @@ func NewIndex(name, filetype, dataFolder string, form *data.FormFile) {
 		if err != nil {
 			return
 		}
-		i.zipFolder = zipFile
+		i.dataFolder = zipFile
 
+	case "folder":
+
+		i.dataFolder = os.DirFS(upload.Folder)
+
+	default:
+		log.Printf("No matching indexer for filetype %s", filetype)
 	}
 
 	i.index()
@@ -84,7 +88,7 @@ func (i Indexer) index() {
 	case "tar":
 		go i.extractTAR(i.Archive, records)
 	default:
-		go i.extractFS(os.DirFS(i.DataFolder), records)
+		go i.extractFS(i.dataFolder, records)
 	}
 	go i.collectRecords(records)
 

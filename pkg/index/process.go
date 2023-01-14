@@ -36,9 +36,12 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- map[string]string, wg *s
 		input, err = data.OpenTar()
 	case "zip":
 		path = data.RelPath
-		input, err = i.zipFolder.Open(path)
+		input, err = i.dataFolder.Open(path)
 	default:
-		path = filepath.Join(i.DataFolder, data.RelPath)
+		path, err = filepath.Abs(data.RelPath)
+		if err != nil {
+			log.Printf("failed to open file at relpath %s\n", data.RelPath)
+		}
 		input, err = os.Open(path)
 	}
 
