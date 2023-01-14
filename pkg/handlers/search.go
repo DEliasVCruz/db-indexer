@@ -15,6 +15,8 @@ import (
 )
 
 func SearchAdvance(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20+1024)
+
 	indexName := chi.URLParam(r, "indexName")
 
 	var body search.ClientBody
