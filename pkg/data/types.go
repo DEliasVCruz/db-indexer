@@ -3,6 +3,7 @@ package data
 import (
 	"archive/tar"
 	"bytes"
+	"mime/multipart"
 )
 
 type Columns struct {
@@ -49,4 +50,9 @@ type DataInfo struct {
 type TarBuf struct {
 	Buffer *bytes.Buffer
 	Header *tar.Header
+}
+
+type FormFile struct {
+	File multipart.File
+	Size int64
 }
