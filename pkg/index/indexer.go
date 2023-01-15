@@ -83,13 +83,19 @@ func (i Indexer) index() {
 
 	records := make(chan map[string]string)
 
-	i.wg.Add(2)
+	i.wg.Add(1)
 	switch i.FileType {
 	case "tar":
 		go i.extractTAR(i.archive, records)
-	default:
+	case "fs":
 		go i.extractFS(i.dataFolder, records)
+	default:
+		log.Printf("No matching extraction for filetype %s\n", i.FileType)
+		i.wg.Done()
+		return
 	}
+
+	i.wg.Add(1)
 	go i.collectRecords(records)
 
 	i.wg.Wait()
