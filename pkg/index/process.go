@@ -32,9 +32,12 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- map[string]string, wg *s
 	case "tar":
 		path = data.TarBuf.Header.Name
 		input, err = data.OpenTar()
-	default:
+	case "fs":
 		path = data.RelPath
 		input, err = i.dataFolder.Open(path)
+	default:
+		log.Printf("failed to open filetype %v\n", i.FileType)
+		return
 	}
 
 	check.Error("fileOpen", err)
