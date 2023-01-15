@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -34,16 +32,9 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- map[string]string, wg *s
 	case "tar":
 		path = data.TarBuf.Header.Name
 		input, err = data.OpenTar()
-	case "zip":
-		path = data.RelPath
-		input, err = i.dataFolder.Open(path)
 	default:
 		path = data.RelPath
-		absPath, err := filepath.Abs(data.RelPath)
-		if err != nil {
-			log.Printf("failed to open file at relpath %s\n", data.RelPath)
-		}
-		input, err = os.Open(absPath)
+		input, err = i.dataFolder.Open(path)
 	}
 
 	check.Error("fileOpen", err)

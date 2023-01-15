@@ -1,6 +1,7 @@
 package index
 
 import (
+	"os"
 	"reflect"
 	"sync"
 	"testing"
@@ -8,12 +9,15 @@ import (
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
 )
 
-func TestExtractFolder(t *testing.T) {
+func TestExtractFS(t *testing.T) {
 
 	ch := make(chan map[string]string)
 	wg := sync.WaitGroup{}
 
-	index := Indexer{FileType: "folder"}
+	index := Indexer{
+		FileType:   "folder",
+		dataFolder: os.DirFS("../../test/fixtures"),
+	}
 
 	t.Cleanup(func() {
 		close(ch)
@@ -27,7 +31,7 @@ func TestExtractFolder(t *testing.T) {
 
 		{
 			"extract normal file",
-			"../../test/fixtures/normal_extract_data",
+			"normal_extract_data",
 			map[string]string{
 				"_id":        "5860470.1075855667730",
 				"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
@@ -37,13 +41,13 @@ func TestExtractFolder(t *testing.T) {
 				"subject":    "Hello World",
 				"x_filename": "don baughman 6-25-02.PST",
 				"contents":   "\nSome content\n\nWith some new lines\n\n",
-				"file_path":  "../../test/fixtures/normal_extract_data",
+				"file_path":  "normal_extract_data",
 			},
 		},
 
 		{
 			"extract with completely empty field",
-			"../../test/fixtures/empty_field_data",
+			"empty_field_data",
 			map[string]string{
 				"_id":        "5860470.1075855667730",
 				"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
@@ -53,13 +57,13 @@ func TestExtractFolder(t *testing.T) {
 				"subject":    "",
 				"x_filename": "don baughman 6-25-02.PST",
 				"contents":   "\nSome content\n",
-				"file_path":  "../../test/fixtures/empty_field_data",
+				"file_path":  "empty_field_data",
 			},
 		},
 
 		{
 			"extract multi new line field",
-			"../../test/fixtures/multi_new_line_field",
+			"multi_new_line_field",
 			map[string]string{
 				"_id":        "15722007.1075840335489",
 				"message_id": "<15722007.1075840335489.JavaMail.evans@thyme>",
@@ -68,13 +72,13 @@ func TestExtractFolder(t *testing.T) {
 				"subject":    "Call Laddie for house party: Mom &dad & Mary   Janice Nieghbour",
 				"x_filename": "don baughman 6-25-02.PST",
 				"contents":   "\nContent\n",
-				"file_path":  "../../test/fixtures/multi_new_line_field",
+				"file_path":  "multi_new_line_field",
 			},
 		},
 
 		{
 			"extract multi line field",
-			"../../test/fixtures/multi_line_field",
+			"multi_line_field",
 			map[string]string{
 				"_id":        "33534862.1075863219076",
 				"message_id": "<33534862.1075863219076.JavaMail.evans@thyme>",
@@ -84,7 +88,7 @@ func TestExtractFolder(t *testing.T) {
 				"subject":    "FW: assignment",
 				"x_filename": "SBAILE2 (Non-Privileged).pst",
 				"contents":   "\n\nContent\n\n Some more content\n",
-				"file_path":  "../../test/fixtures/multi_line_field",
+				"file_path":  "multi_line_field",
 			},
 		},
 	}
@@ -109,8 +113,11 @@ func TestExtractMissingMetadataError(t *testing.T) {
 	var wg sync.WaitGroup
 	var got map[string]string
 
-	index := Indexer{FileType: "folder"}
-	file := &data.DataInfo{RelPath: "../../test/fixtures/missing_metadata"}
+	index := Indexer{
+		FileType:   "folder",
+		dataFolder: os.DirFS("../../test/fixtures"),
+	}
+	file := &data.DataInfo{RelPath: "missing_metadata"}
 
 	t.Cleanup(func() {
 		close(ch)
