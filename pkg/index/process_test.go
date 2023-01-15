@@ -1,7 +1,6 @@
 package index
 
 import (
-	"path/filepath"
 	"reflect"
 	"sync"
 	"testing"
@@ -17,11 +16,6 @@ func TestExtract(t *testing.T) {
 	index := Indexer{FileType: "folder"}
 	file := &data.DataInfo{RelPath: "../../test/fixtures/normal_extract_data"}
 
-	path, err := filepath.Abs(file.RelPath)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
 	t.Cleanup(func() {
 		close(ch)
 	})
@@ -35,7 +29,7 @@ func TestExtract(t *testing.T) {
 		"subject":    "Hello World",
 		"x_filename": "don baughman 6-25-02.PST",
 		"contents":   "\nSome content\n\nWith some new lines\n\n",
-		"file_path":  path,
+		"file_path":  file.RelPath,
 	}
 
 	wg.Add(1)
@@ -56,11 +50,6 @@ func TestExtractWithCompletelyEmptyField(t *testing.T) {
 	index := Indexer{FileType: "folder"}
 	file := &data.DataInfo{RelPath: "../../test/fixtures/empty_field_data"}
 
-	path, err := filepath.Abs(file.RelPath)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
 	t.Cleanup(func() {
 		close(ch)
 	})
@@ -74,7 +63,7 @@ func TestExtractWithCompletelyEmptyField(t *testing.T) {
 		"subject":    "",
 		"x_filename": "don baughman 6-25-02.PST",
 		"contents":   "\nSome content\n",
-		"file_path":  path,
+		"file_path":  file.RelPath,
 	}
 
 	wg.Add(1)
@@ -118,11 +107,6 @@ func TestExtractMultiNewLineField(t *testing.T) {
 	index := Indexer{FileType: "folder"}
 	file := &data.DataInfo{RelPath: "../../test/fixtures/multi_new_line_field"}
 
-	path, err := filepath.Abs(file.RelPath)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
 	t.Cleanup(func() {
 		close(ch)
 	})
@@ -135,7 +119,7 @@ func TestExtractMultiNewLineField(t *testing.T) {
 		"subject":    "Call Laddie for house party: Mom &dad & Mary   Janice Nieghbour",
 		"x_filename": "don baughman 6-25-02.PST",
 		"contents":   "\nContent\n",
-		"file_path":  path,
+		"file_path":  file.RelPath,
 	}
 
 	wg.Add(1)
@@ -156,11 +140,6 @@ func TestExtractMultiLineField(t *testing.T) {
 	index := Indexer{FileType: "folder"}
 	file := &data.DataInfo{RelPath: "../../test/fixtures/multi_line_field"}
 
-	path, err := filepath.Abs(file.RelPath)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
 	t.Cleanup(func() {
 		close(ch)
 	})
@@ -174,7 +153,7 @@ func TestExtractMultiLineField(t *testing.T) {
 		"subject":    "FW: assignment",
 		"x_filename": "SBAILE2 (Non-Privileged).pst",
 		"contents":   "\n\nContent\n\n Some more content\n",
-		"file_path":  path,
+		"file_path":  file.RelPath,
 	}
 
 	wg.Add(1)
