@@ -133,7 +133,7 @@ func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- map[string]string)
 		case tar.TypeDir:
 			break
 		case tar.TypeReg:
-			buf := new(bytes.Buffer)
+			buf := bytes.NewBuffer(make([]byte, 0, header.Size))
 			_, err := buf.ReadFrom(tr)
 			go i.extract(
 				&data.DataInfo{
