@@ -1,6 +1,8 @@
 package index
 
 import (
+	"archive/tar"
+	"bytes"
 	"os"
 	"reflect"
 	"sync"
@@ -15,7 +17,7 @@ func TestExtractFS(t *testing.T) {
 	wg := sync.WaitGroup{}
 
 	index := Indexer{
-		FileType:   "folder",
+		FileType:   "fs",
 		dataFolder: os.DirFS("../../test/fixtures"),
 	}
 
@@ -103,6 +105,63 @@ func TestExtractFS(t *testing.T) {
 				t.Error("got ", got, " wanted ", tt.want)
 			}
 		})
+	}
+
+}
+
+func TestExtractTar(t *testing.T) {
+
+	ch := make(chan map[string]string)
+	wg := sync.WaitGroup{}
+
+	index := Indexer{
+		FileType: "tar",
+	}
+
+	want := map[string]string{
+		"_id":        "5860470.1075855667730",
+		"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
+		"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
+		"from":       "phillip.allen@enron.com",
+		"to":         "david.delainey@enron.com",
+		"subject":    "Hello World",
+		"x_filename": "don baughman 6-25-02.PST",
+		"contents":   "\nSome content\n\nWith some new lines\n\n",
+		"file_path":  "normal_extract_data",
+	}
+
+	t.Cleanup(func() {
+		close(ch)
+	})
+
+	file, err := os.Open("../../test/fixtures/normal_extract_data.tar")
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	tr := tar.NewReader(file)
+
+	header, err := tr.Next()
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	buf := bytes.NewBuffer(make([]byte, 0, header.Size))
+	_, err = buf.ReadFrom(tr)
+
+	wg.Add(1)
+	go index.extract(
+		&data.DataInfo{
+			TarBuf: &data.TarBuf{Buffer: buf, Header: header},
+			Err:    err,
+		},
+		ch,
+		&wg,
+	)
+	got := <-ch
+
+	if !reflect.DeepEqual(got, want) {
+		t.Error("got ", got, " wanted ", want)
 	}
 
 }
