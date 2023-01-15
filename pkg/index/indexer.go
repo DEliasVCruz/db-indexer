@@ -31,8 +31,6 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 	i := &Indexer{}
 
 	i.Name = name
-	i.FileType = filetype
-
 	i.wg = &sync.WaitGroup{}
 
 	switch filetype {
@@ -45,11 +43,13 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 		defer archive.Close()
 
 		i.archive = tar.NewReader(archive)
+		i.FileType = "tar"
 
 	case "tar":
 
 		archive := tar.NewReader(upload.File)
 		i.archive = archive
+		i.FileType = "tar"
 
 	case "zip":
 
@@ -58,10 +58,12 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 			return
 		}
 		i.dataFolder = zipFile
+		i.FileType = "fs"
 
 	case "folder":
 
 		i.dataFolder = os.DirFS(upload.Folder)
+		i.FileType = "fs"
 
 	default:
 		log.Printf("No matching indexer for filetype %s\n", filetype)
