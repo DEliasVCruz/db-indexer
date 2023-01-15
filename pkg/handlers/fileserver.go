@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"strings"
-	"text/template"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -12,24 +10,7 @@ import (
 func ServeFile(file string) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		tsFile, err := template.ParseFiles(file)
-
-		if err != nil {
-
-			log.Println(err.Error())
-			http.Error(w, "could not parse index", http.StatusInternalServerError)
-			return
-
-		}
-
-		if err := tsFile.Execute(w, nil); err != nil {
-
-			log.Println(err.Error())
-			http.Error(w, "could not write template response", http.StatusInternalServerError)
-
-		}
-
+		http.ServeFile(w, r, file)
 	}
 
 }
