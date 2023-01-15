@@ -39,22 +39,23 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 		archive, err := gzip.NewReader(upload.File)
 		if err != nil {
 			log.Println(err.Error())
+			return
 		}
 		defer archive.Close()
 
-		i.archive = tar.NewReader(archive)
+		i.archive = archive
 		i.FileType = "tar"
 
 	case "tar":
 
-		archive := tar.NewReader(upload.File)
-		i.archive = archive
+		i.archive = upload.File
 		i.FileType = "tar"
 
 	case "zip":
 
 		zipFile, err := zip.NewReader(upload.File, upload.Size)
 		if err != nil {
+			log.Println(err.Error())
 			return
 		}
 		i.dataFolder = zipFile
@@ -67,6 +68,7 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 
 	default:
 		log.Printf("No matching indexer for filetype %s\n", filetype)
+		return
 	}
 
 	i.index()
