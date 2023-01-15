@@ -3,7 +3,7 @@ package data
 import (
 	"reflect"
 
-	"github.com/DEliasVCruz/db-indexer/pkg/zinc/search"
+	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
 func BuildResponse(response *search.Response) *SearchResponse {

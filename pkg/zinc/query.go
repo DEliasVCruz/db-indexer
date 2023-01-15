@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
-	"github.com/DEliasVCruz/db-indexer/pkg/zinc/search"
+	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
 func Search(index string, searchQuery *search.SearchQuery) (*search.Response, error) {

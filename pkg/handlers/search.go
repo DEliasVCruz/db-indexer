@@ -9,8 +9,8 @@ import (
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
+	"github.com/DEliasVCruz/db-indexer/pkg/search"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
-	"github.com/DEliasVCruz/db-indexer/pkg/zinc/search"
 	"github.com/go-chi/chi/v5"
 )
 
