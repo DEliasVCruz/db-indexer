@@ -3,6 +3,7 @@ package zinc
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -25,21 +26,22 @@ var request = requests.Request{
 	Retries: 3,
 }
 
-func ExistsIndex(index string) int {
+func ExistsIndex(index string) bool {
 	status, _ := request.Get(fmt.Sprintf("api/index/%s", index), nil)
-
-	return status
+	return status == 200
 }
 
-func CreateIndex(index string, config []byte) {
+func CreateIndex(index string, config []byte) error {
 	status, body := request.Post("api/index", config)
 
 	if status != 200 {
-		log.Fatalf("index: could not create index, got status code %d and %s", status, body)
+		return errors.New(
+			fmt.Sprintf("index: could not create index, got status code %d and %s", status, body),
+		)
 	}
 
 	log.Printf("index: the %s index was created", index)
-	LogInfo("appLogs", fmt.Sprintf("the %s idex was created", index))
+	return nil
 }
 
 func DeleteIndex(index string) {
@@ -50,15 +52,17 @@ func DeleteIndex(index string) {
 	}
 }
 
-func CreateDoc(index string, payLoad []byte) int {
+func CreateDoc(index string, payLoad []byte) error {
 	status, body := request.Post(fmt.Sprintf("api/%s/_doc", index), payLoad)
 
 	if status != 200 {
-		log.Printf("client: could not index file with status %d", status)
-		LogError("appLogs", fmt.Sprintf("could not index file"), string(body))
-		return status
+		return errors.New(
+			fmt.Sprintf(
+				"could not create index doc with status %d and body %v", status, body,
+			),
+		)
 	}
-	return status
+	return nil
 }
 
 func DeleteDoc(index, id string) {
@@ -85,8 +89,10 @@ func CreateDocBatch(index string, payLoad []*data.Fields, wg *sync.WaitGroup) {
 
 	log.Printf("client: %s", body)
 	for idx, record := range payLoad {
+
 		body, _ = json.Marshal(record)
-		if CreateDoc(index, body) != 200 && idx+1 != len(payLoad) {
+		if err := CreateDoc(index, body); err != nil && idx+1 != len(payLoad) {
+
 			log.Printf("data: inserted %d records", idx)
 
 			wg.Add(1)

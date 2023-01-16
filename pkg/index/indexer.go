@@ -5,7 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -39,8 +39,15 @@ func NewIndex(name, filetype, id string, upload *data.UploadData) {
 	case "x-gzip":
 
 		archive, err := gzip.NewReader(upload.File)
+
 		if err != nil {
+
 			log.Println(err.Error())
+			if err := zinc.LogIndexStatus(true, "failed", i.id); err != nil {
+				log.Println("Could not update index status")
+				return
+			}
+
 			return
 		}
 		defer archive.Close()
@@ -56,10 +63,18 @@ func NewIndex(name, filetype, id string, upload *data.UploadData) {
 	case "zip":
 
 		zipFile, err := zip.NewReader(upload.File, upload.Size)
+
 		if err != nil {
+
 			log.Println(err.Error())
+			if err := zinc.LogIndexStatus(true, "failed", i.id); err != nil {
+				log.Println("Could not update index status")
+				return
+			}
+
 			return
 		}
+
 		i.dataFolder = zipFile
 		i.FileType = "fs"
 
@@ -73,30 +88,28 @@ func NewIndex(name, filetype, id string, upload *data.UploadData) {
 		return
 	}
 
-	i.index()
-	response, err := json.Marshal(
-		&data.FileUploaded{
-			Uploaded: true,
-			State:    "done",
-			ID:       i.id,
-		},
-	)
-	if err != nil {
-		log.Println("index status marshaling failed")
-		return
+	if err := i.index(); err != nil {
+
+		if err := zinc.LogIndexStatus(true, "failed", i.id); err != nil {
+			log.Println("Could not update index status")
+			return
+		}
+
 	}
 
-	go zinc.CreateDoc("indexStatus", response)
+	if err := zinc.LogIndexStatus(true, "done", i.id); err != nil {
+		log.Println("Could not update index status")
+	}
 }
 
-func (i Indexer) index() {
-	if zinc.ExistsIndex(i.Name) == 200 {
-		log.Printf("index: %s index already exists", i.Name)
-	} else {
-		log.Printf("index: the %s index does not exist", i.Name)
+func (i Indexer) index() error {
+	if !zinc.ExistsIndex(i.Name) {
 		log.Printf("index: creating %s index", i.Name)
-		zinc.CreateIndex(i.Name, i.Config)
+		if err := zinc.CreateIndex(i.Name, i.Config); err != nil {
+			return err
+		}
 	}
+	log.Printf("index: %s index already exists", i.Name)
 
 	records := make(chan *data.Fields, 10)
 
@@ -107,15 +120,15 @@ func (i Indexer) index() {
 	case "fs":
 		go i.extractFS(i.dataFolder, records)
 	default:
-		log.Printf("No matching extraction for filetype %s\n", i.FileType)
 		i.wg.Done()
-		return
+		return errors.New(fmt.Sprintf("No matching extraction for filetype %s\n", i.FileType))
 	}
 
 	i.wg.Add(1)
 	go i.collectRecords(records)
 
 	i.wg.Wait()
+	return nil
 }
 
 func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- *data.Fields) {
