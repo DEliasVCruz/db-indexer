@@ -55,15 +55,18 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.W
 	fieldName := &strings.Builder{}
 	fieldValue := &strings.Builder{}
 
-	fieldName.Grow(120)
-	fieldValue.Grow(120)
+	fieldName.Grow(25)
+	fieldValue.Grow(80)
 
-	fileBuff := bufio.NewReaderSize(input, data.Size)
+	fileBuff := bufio.NewReaderSize(input, 1024)
 	fieldVals := reflect.ValueOf(indexData).Elem()
+
+	remain := data.Size
 
 	allMetadataParsed := false
 	for !allMetadataParsed {
-		line, err := fileBuff.ReadBytes('\n')
+		line, err := fileBuff.ReadSlice('\n')
+		remain -= len(line)
 		if err != nil && err != io.EOF {
 			fmt.Printf("error reading %s file metadata", path)
 			return
@@ -82,6 +85,13 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.W
 		}
 
 		name := bytes.ReplaceAll(line[:sepIdx], []byte("-"), []byte(""))
+
+		if len(name) > 25 {
+			fieldValue.WriteString(" ")
+			fieldValue.Write(bytes.TrimSpace(line))
+			fieldVals.FieldByName(field).SetString(fieldValue.String())
+			continue
+		}
 
 		if bytes.Equal(name, []byte("XFileName")) {
 			allMetadataParsed = true
@@ -125,12 +135,24 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.W
 		return
 	}
 
-	fieldValue.Grow(fileBuff.Buffered())
-
-	fileBuff.ReadBytes('\n')
+	fileBuff.ReadSlice('\n')
 	fieldValue.WriteByte('\n')
 
-	fileBuff.WriteTo(fieldValue)
+	fieldValue.Grow(remain / 2)
+	for {
+		line, err := fileBuff.ReadSlice('\n')
+		if err != nil && err != io.EOF {
+			fmt.Printf("error reading %s file metadata", path)
+			return
+		}
+
+		fieldValue.Write(line)
+
+		if err == io.EOF {
+			break
+		}
+
+	}
 
 	fieldVals.FieldByName("Contents").SetString(fieldValue.String())
 	fieldVals.FieldByName("FilePath").SetString(path)

@@ -100,8 +100,18 @@ func TestExtractFS(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			file, err := index.dataFolder.Open(tt.file)
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+
+			info, err := file.Stat()
+			if err != nil {
+				t.Fatal(err.Error())
+			}
+
 			wg.Add(1)
-			go index.extract(&data.DataInfo{RelPath: tt.file}, ch, &wg)
+			go index.extract(&data.DataInfo{RelPath: tt.file, Size: int(info.Size())}, ch, &wg)
 			got := <-ch
 
 			if !reflect.DeepEqual(tt.want, got) {
@@ -157,6 +167,7 @@ func TestExtractTar(t *testing.T) {
 		&data.DataInfo{
 			TarBuf: &data.TarBuf{Buffer: buf, Header: header},
 			Err:    err,
+			Size:   int(header.Size),
 		},
 		ch,
 		&wg,
@@ -226,7 +237,17 @@ func BenchmarkExtract(b *testing.B) {
 		FileType:   "fs",
 		dataFolder: os.DirFS("../../test/fixtures"),
 	}
-	file := &data.DataInfo{RelPath: "bench_doc"}
+	file, err := index.dataFolder.Open("bench_doc")
+	if err != nil {
+		b.Fatal(err.Error())
+	}
+
+	info, err := file.Stat()
+	if err != nil {
+		b.Fatal(err.Error())
+	}
+
+	fs := &data.DataInfo{RelPath: "bench_doc", Size: int(info.Size())}
 
 	b.Cleanup(func() {
 		close(ch)
@@ -236,7 +257,7 @@ func BenchmarkExtract(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		wg.Add(1)
-		go index.extract(file, ch, &wg)
+		go index.extract(fs, ch, &wg)
 		<-ch
 	}
 
