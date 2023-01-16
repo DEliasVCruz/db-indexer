@@ -1,18 +1,27 @@
 package zinc
 
+import "encoding/json"
+
 func LogInfo(index, message string) {
-	CreateDoc(index, map[string]string{
-		"severity": "info",
-		"message":  message,
-	})
+	payLoad, _ := json.Marshal(
+		map[string]string{
+			"severity": "info",
+			"message":  message,
+		},
+	)
+
+	CreateDoc(index, payLoad)
 
 }
 
 func LogError(index, message, err string) {
-	CreateDoc(index, map[string]string{
-		"severity": "error",
-		"message":  message,
-		"error":    err,
-	})
+	payLoad, _ := json.Marshal(
+		map[string]string{
+			"severity": "error",
+			"message":  message,
+			"error":    err,
+		},
+	)
+	CreateDoc(index, payLoad)
 
 }

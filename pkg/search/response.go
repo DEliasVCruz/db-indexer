@@ -18,10 +18,13 @@ type total struct {
 type hit struct {
 	Index  string `json:"_index"`
 	Id     string `json:"_id"`
-	Source *data  `json:"_source"`
+	Source *Data  `json:"_source"`
 }
 
-type data struct {
+type Data struct {
+	ID          string `json:"_id"`
+	MessageID   string `json:"message_id"`
+	Date        string `json:"date"`
 	From        string `json:"from"`
 	To          string `json:"to"`
 	Subject     string `json:"subject"`
@@ -33,10 +36,11 @@ type data struct {
 	Bcc         string `json:"bcc"`
 	XFrom       string `json:"x_from"`
 	XTo         string `json:"x_to"`
-	XCc         string `json:"x_cc"`
-	XBcc        string `json:"x_bcc"`
+	Xcc         string `json:"x_cc"`
+	Xbcc        string `json:"x_bcc"`
 	XFolder     string `json:"x_foler"`
 	XOrigin     string `json:"x_origin"`
-	XFilename   string `json:"x_filename"`
+	XFileName   string `json:"x_filename"`
+	FilePath    string `json:"file_path"`
 	Contents    string `json:"contents"`
 }

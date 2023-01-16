@@ -18,11 +18,12 @@ type Columns struct {
 	Bcc         []string `json:"bcc"`
 	XFrom       []string `json:"x_from"`
 	XTo         []string `json:"x_to"`
-	XCc         []string `json:"x_cc"`
-	XBcc        []string `json:"x_bcc"`
+	Xcc         []string `json:"x_cc"`
+	Xbcc        []string `json:"x_bcc"`
 	XFolder     []string `json:"x_foler"`
 	XOrigin     []string `json:"x_origin"`
-	XFilename   []string `json:"x_filename"`
+	XFileName   []string `json:"x_filename"`
+	FilPath     []string `json:"file_path"`
 	Contents    []string `json:"contents"`
 }
 
@@ -44,6 +45,7 @@ type ColumnData struct {
 type DataInfo struct {
 	RelPath string
 	TarBuf  *TarBuf
+	Size    int
 	Err     error
 }
 

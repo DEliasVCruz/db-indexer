@@ -5,15 +5,18 @@ import (
 	"bytes"
 	"os"
 	"reflect"
+
+	// "reflect"
 	"sync"
 	"testing"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
+	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
 func TestExtractFS(t *testing.T) {
 
-	ch := make(chan map[string]string)
+	ch := make(chan *search.Data)
 	wg := sync.WaitGroup{}
 
 	index := Indexer{
@@ -28,69 +31,69 @@ func TestExtractFS(t *testing.T) {
 	var tests = []struct {
 		name string
 		file string
-		want map[string]string
+		want *search.Data
 	}{
 
 		{
 			"extract normal file",
 			"normal_extract_data",
-			map[string]string{
-				"_id":        "5860470.1075855667730",
-				"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
-				"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
-				"from":       "phillip.allen@enron.com",
-				"to":         "david.delainey@enron.com",
-				"subject":    "Hello World",
-				"x_filename": "don baughman 6-25-02.PST",
-				"contents":   "\nSome content\n\nWith some new lines\n\n",
-				"file_path":  "normal_extract_data",
+			&search.Data{
+				ID:        "5860470.1075855667730",
+				MessageID: "<5860470.1075855667730.JavaMail.evans@thyme>",
+				Date:      "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
+				From:      "phillip.allen@enron.com",
+				To:        "david.delainey@enron.com",
+				Subject:   "Hello World",
+				XFileName: "don baughman 6-25-02.PST",
+				Contents:  "\nSome content\n\nWith some new lines\n\n",
+				FilePath:  "normal_extract_data",
 			},
 		},
 
 		{
 			"extract with completely empty field",
 			"empty_field_data",
-			map[string]string{
-				"_id":        "5860470.1075855667730",
-				"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
-				"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
-				"from":       "phillip.allen@enron.com",
-				"to":         "david.delainey@enron.com",
-				"subject":    "",
-				"x_filename": "don baughman 6-25-02.PST",
-				"contents":   "\nSome content\n",
-				"file_path":  "empty_field_data",
+			&search.Data{
+				ID:        "5860470.1075855667730",
+				MessageID: "<5860470.1075855667730.JavaMail.evans@thyme>",
+				Date:      "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
+				From:      "phillip.allen@enron.com",
+				To:        "david.delainey@enron.com",
+				Subject:   "",
+				XFileName: "don baughman 6-25-02.PST",
+				Contents:  "\nSome content\n",
+				FilePath:  "empty_field_data",
 			},
 		},
 
 		{
 			"extract multi new line field",
 			"multi_new_line_field",
-			map[string]string{
-				"_id":        "15722007.1075840335489",
-				"message_id": "<15722007.1075840335489.JavaMail.evans@thyme>",
-				"date":       "Thu, 13 Dec 2001 06:39:18 -0800 (PST)",
-				"from":       "don.baughman@enron.com",
-				"subject":    "Call Laddie for house party: Mom &dad & Mary   Janice Nieghbour",
-				"x_filename": "don baughman 6-25-02.PST",
-				"contents":   "\nContent\n",
-				"file_path":  "multi_new_line_field",
+			&search.Data{
+				ID:        "15722007.1075840335489",
+				MessageID: "<15722007.1075840335489.JavaMail.evans@thyme>",
+				Date:      "Thu, 13 Dec 2001 06:39:18 -0800 (PST)",
+				From:      "don.baughman@enron.com",
+				Subject:   "Call Laddie for house party: Mom &dad & Mary   Janice Nieghbour",
+				XFileName: "don baughman 6-25-02.PST",
+				Contents:  "\nContent\n",
+				FilePath:  "multi_new_line_field",
 			},
 		},
 
 		{
 			"extract multi line field",
 			"multi_line_field",
-			map[string]string{
-				"_id":        "33534862.1075863219076",
-				"message_id": "<33534862.1075863219076.JavaMail.evans@thyme>",
-				"date":       "Mon, 26 Nov 2001 12:27:12 -0800 (PST)",
-				"from":       "craig.breslau@enron.com",
-				"to":         "susan.bailey@enron.com, credit <.williams@enron.com>, legal <.taylor@enron.com>",
-				"subject":    "FW: assignment",
-				"x_filename": "SBAILE2 (Non-Privileged).pst",
-				"contents":   "\n\nContent\n\n Some more content\n",
-				"file_path":  "multi_line_field",
+			&search.Data{
+				ID:        "33534862.1075863219076",
+				MessageID: "<33534862.1075863219076.JavaMail.evans@thyme>",
+				Date:      "Mon, 26 Nov 2001 12:27:12 -0800 (PST)",
+				From:      "craig.breslau@enron.com",
+				To:        "susan.bailey@enron.com, credit <.williams@enron.com>, legal <.taylor@enron.com>",
+				Subject:   "FW: assignment",
+				XFileName: "SBAILE2 (Non-Privileged).pst",
+				Contents:  "\n\nContent\n\n Some more content\n",
+				FilePath:  "multi_line_field",
 			},
 		},
 	}
@@ -101,8 +104,8 @@ func TestExtractFS(t *testing.T) {
 			go index.extract(&data.DataInfo{RelPath: tt.file}, ch, &wg)
 			got := <-ch
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Error("got ", got, " wanted ", tt.want)
+			if !reflect.DeepEqual(tt.want, got) {
+				t.Errorf("got:\n%v,\nwanted:\n%v", got, tt.want)
 			}
 		})
 	}
@@ -111,23 +114,23 @@ func TestExtractFS(t *testing.T) {
 
 func TestExtractTar(t *testing.T) {
 
-	ch := make(chan map[string]string)
+	ch := make(chan *search.Data)
 	wg := sync.WaitGroup{}
 
 	index := Indexer{
 		FileType: "tar",
 	}
 
-	want := map[string]string{
-		"_id":        "5860470.1075855667730",
-		"message_id": "<5860470.1075855667730.JavaMail.evans@thyme>",
-		"date":       "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
-		"from":       "phillip.allen@enron.com",
-		"to":         "david.delainey@enron.com",
-		"subject":    "Hello World",
-		"x_filename": "don baughman 6-25-02.PST",
-		"contents":   "\nSome content\n\nWith some new lines\n\n",
-		"file_path":  "normal_extract_data",
+	want := &search.Data{
+		ID:        "5860470.1075855667730",
+		MessageID: "<5860470.1075855667730.JavaMail.evans@thyme>",
+		Date:      "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
+		From:      "phillip.allen@enron.com",
+		To:        "david.delainey@enron.com",
+		Subject:   "Hello World",
+		XFileName: "don baughman 6-25-02.PST",
+		Contents:  "\nSome content\n\nWith some new lines\n\n",
+		FilePath:  "normal_extract_data",
 	}
 
 	t.Cleanup(func() {
@@ -160,20 +163,19 @@ func TestExtractTar(t *testing.T) {
 	)
 	got := <-ch
 
-	if !reflect.DeepEqual(got, want) {
-		t.Error("got ", got, " wanted ", want)
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("got:\n%v,\nwanted:\n%v", got, want)
 	}
-
 }
 
 func TestExtractMissingMetadataError(t *testing.T) {
 
-	ch := make(chan map[string]string)
+	ch := make(chan *search.Data)
 	var wg sync.WaitGroup
-	var got map[string]string
+	var got *search.Data
 
 	index := Indexer{
-		FileType:   "folder",
+		FileType:   "fs",
 		dataFolder: os.DirFS("../../test/fixtures"),
 	}
 	file := &data.DataInfo{RelPath: "missing_metadata"}
@@ -193,35 +195,38 @@ func TestExtractMissingMetadataError(t *testing.T) {
 
 }
 
-func TestProcess(t *testing.T) {
+// func TestProcess(t *testing.T) {
 
-	processFields := map[string]string{
-		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
-		"content_type": "text/plain; charset=us-ascii",
-		"x_folder":     `\ExMerge - Baughman Jr., Don\Deleted Items`,
-	}
+// 	processFields := map[string]string{
+// 		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
+// 		"content_type": "text/plain; charset=us-ascii",
+// 		"x_folder":     `\ExMerge - Baughman Jr., Don\Deleted Items`,
+// 	}
 
-	want := map[string]string{
-		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
-		"_id":          "15722007.1075840335489",
-		"content_type": "text/plain",
-		"charset":      "us-ascii",
-		"x_folder":     `/ExMerge - Baughman Jr., Don/Deleted Items`,
-	}
+// 	want := map[string]string{
+// 		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
+// 		"_id":          "15722007.1075840335489",
+// 		"content_type": "text/plain",
+// 		"charset":      "us-ascii",
+// 		"x_folder":     `/ExMerge - Baughman Jr., Don/Deleted Items`,
+// 	}
 
-	got := process(processFields)
+// 	got := process(processFields)
 
-	if !reflect.DeepEqual(got, want) {
-		t.Error("got ", got, " wanted ", want)
-	}
-}
+// 	if !reflect.DeepEqual(got, want) {
+// 		t.Error("got ", got, " wanted ", want)
+// 	}
+// }
 
 func BenchmarkExtract(b *testing.B) {
-	ch := make(chan map[string]string)
+	ch := make(chan *search.Data)
 	var wg sync.WaitGroup
 
-	index := Indexer{FileType: "folder"}
-	file := &data.DataInfo{RelPath: "../../test/fixtures/multi_line_field"}
+	index := Indexer{
+		FileType:   "fs",
+		dataFolder: os.DirFS("../../test/fixtures"),
+	}
+	file := &data.DataInfo{RelPath: "bench_doc"}
 
 	b.Cleanup(func() {
 		close(ch)
@@ -233,22 +238,6 @@ func BenchmarkExtract(b *testing.B) {
 		wg.Add(1)
 		go index.extract(file, ch, &wg)
 		<-ch
-	}
-
-}
-
-func BenchmarkProcess(b *testing.B) {
-
-	processFields := map[string]string{
-		"message_id":   "<15722007.1075840335489.JavaMail.evans@thyme>",
-		"content_type": "text/plain; charset=us-ascii",
-		"x_folder":     `\ExMerge - Baughman Jr., Don\Deleted Items`,
-	}
-
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		process(processFields)
 	}
 
 }

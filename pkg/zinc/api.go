@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/requests"
+	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
 var request = requests.Request{
@@ -49,13 +50,12 @@ func DeleteIndex(index string) {
 	}
 }
 
-func CreateDoc(index string, payLoad map[string]string) int {
-	jsonPayLoad, _ := json.Marshal(payLoad)
-	status, body := request.Post(fmt.Sprintf("api/%s/_doc", index), jsonPayLoad)
+func CreateDoc(index string, payLoad []byte) int {
+	status, body := request.Post(fmt.Sprintf("api/%s/_doc", index), payLoad)
 
 	if status != 200 {
-		log.Printf("client: could not index file %s with status %d", payLoad["file_path"], status)
-		LogError("appLogs", fmt.Sprintf("could not index file %s", payLoad["file_path"]), string(body))
+		log.Printf("client: could not index file with status %d", status)
+		LogError("appLogs", fmt.Sprintf("could not index file"), string(body))
 		return status
 	}
 	return status
@@ -71,7 +71,7 @@ func DeleteDoc(index, id string) {
 
 }
 
-func CreateDocBatch(index string, payLoad []map[string]string, wg *sync.WaitGroup) {
+func CreateDocBatch(index string, payLoad []*search.Data, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	jsonSlice, _ := json.Marshal(payLoad)
@@ -85,7 +85,8 @@ func CreateDocBatch(index string, payLoad []map[string]string, wg *sync.WaitGrou
 
 	log.Printf("client: %s", body)
 	for idx, record := range payLoad {
-		if CreateDoc(index, record) != 200 && idx+1 != len(payLoad) {
+		body, _ = json.Marshal(record)
+		if CreateDoc(index, body) != 200 && idx+1 != len(payLoad) {
 			log.Printf("data: inserted %d records", idx)
 
 			wg.Add(1)

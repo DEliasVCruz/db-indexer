@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
+	"github.com/DEliasVCruz/db-indexer/pkg/search"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
@@ -83,7 +84,7 @@ func (i Indexer) index() {
 		zinc.CreateIndex(i.Name, i.Config)
 	}
 
-	records := make(chan map[string]string)
+	records := make(chan *search.Data)
 
 	i.wg.Add(1)
 	switch i.FileType {
@@ -103,7 +104,7 @@ func (i Indexer) index() {
 	i.wg.Wait()
 }
 
-func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- map[string]string) {
+func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- *search.Data) {
 	tr := tar.NewReader(archive)
 
 	var wg sync.WaitGroup
@@ -138,7 +139,9 @@ func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- map[string]string)
 			go i.extract(
 				&data.DataInfo{
 					TarBuf: &data.TarBuf{Buffer: buf, Header: header},
-					Err:    err},
+					Err:    err,
+					Size:   int(header.Size),
+				},
 				writeCh,
 				&wg,
 			)
@@ -152,7 +155,7 @@ func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- map[string]string)
 
 }
 
-func (i Indexer) extractFS(directory fs.FS, writeCh chan<- map[string]string) {
+func (i Indexer) extractFS(directory fs.FS, writeCh chan<- *search.Data) {
 	defer i.wg.Done()
 
 	var wg sync.WaitGroup
@@ -168,8 +171,17 @@ func (i Indexer) extractFS(directory fs.FS, writeCh chan<- map[string]string) {
 		}
 
 		if !dir.IsDir() {
+			fileInfo, err := dir.Info()
+			if err != nil {
+				fmt.Printf("failed to get info for path %s", childPath)
+			}
+
 			wg.Add(1)
-			go i.extract(&data.DataInfo{RelPath: childPath}, writeCh, &wg)
+			go i.extract(
+				&data.DataInfo{
+					RelPath: childPath,
+					Size:    int(fileInfo.Size()),
+				}, writeCh, &wg)
 		}
 
 		return nil
@@ -179,10 +191,10 @@ func (i Indexer) extractFS(directory fs.FS, writeCh chan<- map[string]string) {
 	close(writeCh)
 }
 
-func (i Indexer) collectRecords(readCh <-chan map[string]string) {
+func (i Indexer) collectRecords(readCh <-chan *search.Data) {
 	defer i.wg.Done()
 
-	var records [500]map[string]string
+	var records [500]*search.Data
 	size := len(records)
 	recordIdx := 0
 
@@ -190,7 +202,7 @@ func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 		if recordIdx < size {
 			records[recordIdx] = record
 		} else {
-			recordsSlice := make([]map[string]string, size)
+			recordsSlice := make([]*search.Data, size)
 			copy(recordsSlice, records[:])
 
 			i.wg.Add(1)
@@ -204,7 +216,7 @@ func (i Indexer) collectRecords(readCh <-chan map[string]string) {
 	}
 
 	if recordIdx != 0 {
-		recordsSlice := make([]map[string]string, recordIdx)
+		recordsSlice := make([]*search.Data, recordIdx)
 		copy(recordsSlice, records[:recordIdx])
 
 		i.wg.Add(1)

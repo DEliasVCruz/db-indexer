@@ -2,26 +2,24 @@ package index
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
+	"reflect"
 	"regexp"
 	"strings"
 	"sync"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
+	"github.com/DEliasVCruz/db-indexer/pkg/search"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
-var fieldRegex = regexp.MustCompile(`^([\w\-]*):\s*(.*)`)
-var brokenLineRegex = regexp.MustCompile(`^\s*(.*)\s*$`)
 var messageRegex = regexp.MustCompile(`^<(\d+\.\d+)\..*`)
 
-var fieldMetadataFlag = "x_filename"
-var specialChars = [8]string{"-", "_", " ", "\n", ";", "=", `\`, "/"}
-
-func (i Indexer) extract(data *data.DataInfo, ch chan<- map[string]string, wg *sync.WaitGroup) {
+func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	var input io.ReadCloser
@@ -51,64 +49,109 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- map[string]string, wg *s
 	}
 	defer input.Close()
 
-	fields := make(map[string]string)
 	var field string
 
-	scanner := bufio.NewScanner(input)
-	buf := make([]byte, 70*1024)
-	scanner.Buffer(buf, bufio.MaxScanTokenSize)
+	indexData := &search.Data{}
+	fieldName := &strings.Builder{}
+	fieldValue := &strings.Builder{}
+
+	fieldName.Grow(120)
+	fieldValue.Grow(120)
+
+	fileBuff := bufio.NewReaderSize(input, data.Size)
+	fieldVals := reflect.ValueOf(indexData).Elem()
 
 	allMetadataParsed := false
-	for scanner.Scan() {
-		line := scanner.Text()
-		if !allMetadataParsed {
-			if match := fieldRegex.FindStringSubmatch(line); match != nil {
-				field = strings.ReplaceAll(strings.ToLower(match[1]), specialChars[0], specialChars[1])
-				fields[field] = strings.TrimSpace(match[2])
-				if field == fieldMetadataFlag {
-					allMetadataParsed = true
-				}
-			} else {
-				fields[field] += specialChars[2] + strings.TrimSpace(brokenLineRegex.FindStringSubmatch(line)[1])
-			}
-		} else {
-			fields["contents"] += line + specialChars[3]
+	for !allMetadataParsed {
+		line, err := fileBuff.ReadBytes('\n')
+		if err != nil && err != io.EOF {
+			fmt.Printf("error reading %s file metadata", path)
+			return
 		}
+
+		if err == io.EOF {
+			break
+		}
+
+		sepIdx := bytes.IndexByte(line, ':')
+		if sepIdx < 0 {
+			fieldValue.WriteString(" ")
+			fieldValue.Write(bytes.TrimSpace(line))
+			fieldVals.FieldByName(field).SetString(fieldValue.String())
+			continue
+		}
+
+		name := bytes.ReplaceAll(line[:sepIdx], []byte("-"), []byte(""))
+
+		if bytes.Equal(name, []byte("XFileName")) {
+			allMetadataParsed = true
+
+			fieldValue.Reset()
+			fieldValue.Write(bytes.TrimSpace(line[sepIdx+1:]))
+
+			fieldVals.
+				FieldByName("XFileName").
+				SetString(fieldValue.String())
+
+			fieldValue.Reset()
+
+			break
+		}
+
+		fieldName.Write(name)
+
+		if !fieldVals.FieldByName(fieldName.String()).IsValid() {
+			fieldValue.WriteString(" ")
+			fieldValue.Write(bytes.TrimSpace(line))
+			fieldVals.FieldByName(field).SetString(fieldValue.String())
+			continue
+		}
+
+		fieldValue.Reset()
+		fieldValue.Write(bytes.TrimSpace(line[sepIdx+1:]))
+
+		field = fieldName.String()
+		fieldVals.
+			FieldByName(field).
+			SetString(fieldValue.String())
+
+		fieldName.Reset()
+
 	}
 
-	fields["file_path"] = path
-
-	if allMetadataParsed {
-		ch <- process(fields)
+	if !allMetadataParsed {
+		log.Printf("data: broken metadata at path %s", path)
+		go zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
 		return
 	}
 
-	log.Printf("data: failed to extract data at path %s", path)
-	if scanner.Err() != nil {
-		go zinc.LogError("appLogs", fmt.Sprintf("scanning failure at path %s", path), scanner.Err().Error())
-		return
-	}
-	go zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
-}
+	fieldValue.Grow(fileBuff.Buffered())
 
-func process(fields map[string]string) map[string]string {
+	fileBuff.ReadBytes('\n')
+	fieldValue.WriteByte('\n')
 
-	messageId := messageRegex.FindStringSubmatch(fields["message_id"])
+	fileBuff.WriteTo(fieldValue)
+
+	fieldVals.FieldByName("Contents").SetString(fieldValue.String())
+	fieldVals.FieldByName("FilePath").SetString(path)
+
+	messageId := messageRegex.FindStringSubmatch(fieldVals.FieldByName("MessageID").String())
 	if messageId != nil {
-		fields["_id"] = messageId[1]
+		fieldVals.FieldByName("ID").SetString(messageId[1])
 	}
 
-	if val, ok := fields["content_type"]; ok {
-		contentTypes := strings.Split(val, specialChars[4])
+	if !fieldVals.FieldByName("ContentType").IsZero() {
+		contentTypes := strings.Split(fieldVals.FieldByName("ContentType").String(), ";")
 		if len(contentTypes) > 1 {
-			fields["content_type"] = contentTypes[0]
-			fields["charset"] = strings.Split(contentTypes[1], specialChars[5])[1]
+			fieldVals.FieldByName("ContentType").SetString(contentTypes[0])
+			fieldVals.FieldByName("Charset").SetString(strings.Split(contentTypes[1], "=")[1])
 		}
 	}
 
-	if val, ok := fields["x_folder"]; ok {
-		fields["x_folder"] = strings.ReplaceAll(val, specialChars[6], specialChars[7])
+	if !fieldVals.FieldByName("XFolder").IsZero() {
+		xFolder := strings.ReplaceAll(fieldVals.FieldByName("XFolder").String(), `\`, "/")
+		fieldVals.FieldByName("XFolder").SetString(xFolder)
 	}
 
-	return fields
+	ch <- indexData
 }
