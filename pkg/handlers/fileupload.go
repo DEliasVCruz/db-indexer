@@ -3,18 +3,25 @@ package handlers
 import (
 	"archive/tar"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
 	"github.com/DEliasVCruz/db-indexer/pkg/index"
+	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
+	"github.com/go-chi/chi/v5"
 )
 
 const MAX_UPLOAD_SIZE = 500<<20 + 1024 // 500MB
 const MAX_MEMORY = 20 << 20            // 20MB
 
 func FileUpload(w http.ResponseWriter, r *http.Request) {
+
+	indexName := chi.URLParam(r, "indexName")
 
 	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE)
 
@@ -59,17 +66,50 @@ func FileUpload(w http.ResponseWriter, r *http.Request) {
 		filetype = "application/tar"
 	}
 
+	userid, err := r.Cookie("userid")
+	if err != nil {
+		uuid, err := exec.Command("uuidgen").Output()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		userid := &http.Cookie{
+			Name:    "userid",
+			Value:   string(uuid),
+			Expires: time.Now().Add(365 * 24 * time.Hour)}
+
+		http.SetCookie(w, userid)
+	}
+
+	indexId, err := exec.Command("uuidgen").Output()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	id := string(indexId)
+
 	go index.NewIndex(
-		"My Index",
+		fmt.Sprintf("%s_%s", userid.String(), indexName),
 		strings.TrimPrefix(filetype, "application/"),
+		id,
 		&data.UploadData{File: file, Size: fh.Size},
 	)
 
-	response, err := json.Marshal(&FileUploaded{Uploaded: true, State: "processing"})
+	response, err := json.Marshal(
+		&data.FileUploaded{
+			Uploaded: true,
+			State:    "processing",
+			ID:       id,
+		},
+	)
 	if err != nil {
 		http.Error(w, "server marshaling failed", http.StatusInternalServerError)
 		return
 	}
+
+	go zinc.CreateDoc("indexStatus", response)
 
 	w.Write(response)
 

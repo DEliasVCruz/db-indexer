@@ -34,8 +34,6 @@ func main() {
 	r.Get("/", handlers.ServeFile("./static/index.html"))
 	r.Get("/about", handlers.ServeFile("./static/about/index.html"))
 
-	r.Put("/upload", handlers.FileUpload)
-
 	r.Route("/index", func(r chi.Router) {
 
 		r.Get("/", handlers.ServeFile("./static/app/index.html"))
@@ -45,6 +43,7 @@ func main() {
 			r.Get("/", handlers.ServeFile("./static/app/index.html"))
 			r.Get("/search", handlers.SearchField)
 			r.Post("/search", handlers.SearchAdvance)
+			r.Put("/upload", handlers.FileUpload)
 
 		})
 
