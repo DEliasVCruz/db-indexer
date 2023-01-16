@@ -22,9 +22,6 @@ type hit struct {
 }
 
 type Data struct {
-	ID          string `json:"_id"`
-	MessageID   string `json:"message_id"`
-	Date        string `json:"date"`
 	From        string `json:"from"`
 	To          string `json:"to"`
 	Subject     string `json:"subject"`

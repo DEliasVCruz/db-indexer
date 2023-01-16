@@ -5,18 +5,15 @@ import (
 	"bytes"
 	"os"
 	"reflect"
-
-	// "reflect"
 	"sync"
 	"testing"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
-	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
 func TestExtractFS(t *testing.T) {
 
-	ch := make(chan *search.Data)
+	ch := make(chan *data.Fields)
 	wg := sync.WaitGroup{}
 
 	index := Indexer{
@@ -31,13 +28,13 @@ func TestExtractFS(t *testing.T) {
 	var tests = []struct {
 		name string
 		file string
-		want *search.Data
+		want *data.Fields
 	}{
 
 		{
 			"extract normal file",
 			"normal_extract_data",
-			&search.Data{
+			&data.Fields{
 				ID:        "5860470.1075855667730",
 				MessageID: "<5860470.1075855667730.JavaMail.evans@thyme>",
 				Date:      "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
@@ -53,7 +50,7 @@ func TestExtractFS(t *testing.T) {
 		{
 			"extract with completely empty field",
 			"empty_field_data",
-			&search.Data{
+			&data.Fields{
 				ID:        "5860470.1075855667730",
 				MessageID: "<5860470.1075855667730.JavaMail.evans@thyme>",
 				Date:      "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
@@ -69,7 +66,7 @@ func TestExtractFS(t *testing.T) {
 		{
 			"extract multi new line field",
 			"multi_new_line_field",
-			&search.Data{
+			&data.Fields{
 				ID:        "15722007.1075840335489",
 				MessageID: "<15722007.1075840335489.JavaMail.evans@thyme>",
 				Date:      "Thu, 13 Dec 2001 06:39:18 -0800 (PST)",
@@ -84,7 +81,7 @@ func TestExtractFS(t *testing.T) {
 		{
 			"extract multi line field",
 			"multi_line_field",
-			&search.Data{
+			&data.Fields{
 				ID:        "33534862.1075863219076",
 				MessageID: "<33534862.1075863219076.JavaMail.evans@thyme>",
 				Date:      "Mon, 26 Nov 2001 12:27:12 -0800 (PST)",
@@ -124,14 +121,14 @@ func TestExtractFS(t *testing.T) {
 
 func TestExtractTar(t *testing.T) {
 
-	ch := make(chan *search.Data)
+	ch := make(chan *data.Fields)
 	wg := sync.WaitGroup{}
 
 	index := Indexer{
 		FileType: "tar",
 	}
 
-	want := &search.Data{
+	want := &data.Fields{
 		ID:        "5860470.1075855667730",
 		MessageID: "<5860470.1075855667730.JavaMail.evans@thyme>",
 		Date:      "Thu, 5 Oct 2000 06:26:00 -0700 (PDT)",
@@ -181,9 +178,9 @@ func TestExtractTar(t *testing.T) {
 
 func TestExtractMissingMetadataError(t *testing.T) {
 
-	ch := make(chan *search.Data)
+	ch := make(chan *data.Fields)
 	var wg sync.WaitGroup
-	var got *search.Data
+	var got *data.Fields
 
 	index := Indexer{
 		FileType:   "fs",
@@ -230,7 +227,7 @@ func TestExtractMissingMetadataError(t *testing.T) {
 // }
 
 func BenchmarkExtract(b *testing.B) {
-	ch := make(chan *search.Data)
+	ch := make(chan *data.Fields)
 	var wg sync.WaitGroup
 
 	index := Indexer{

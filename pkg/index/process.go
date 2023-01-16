@@ -13,13 +13,12 @@ import (
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
-	"github.com/DEliasVCruz/db-indexer/pkg/search"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
 var messageRegex = regexp.MustCompile(`^<(\d+\.\d+)\..*`)
 
-func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.WaitGroup) {
+func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	var input io.ReadCloser
@@ -28,10 +27,10 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.W
 
 	switch i.FileType {
 	case "tar":
-		path = data.TarBuf.Header.Name
-		input, err = data.OpenTar()
+		path = dataInfo.TarBuf.Header.Name
+		input, err = dataInfo.OpenTar()
 	case "fs":
-		path = data.RelPath
+		path = dataInfo.RelPath
 		input, err = i.dataFolder.Open(path)
 	default:
 		log.Printf("failed to open filetype %v\n", i.FileType)
@@ -51,7 +50,7 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.W
 
 	var field string
 
-	indexData := &search.Data{}
+	indexData := &data.Fields{}
 	fieldName := &strings.Builder{}
 	fieldValue := &strings.Builder{}
 
@@ -61,7 +60,7 @@ func (i Indexer) extract(data *data.DataInfo, ch chan<- *search.Data, wg *sync.W
 	fileBuff := bufio.NewReaderSize(input, 1024)
 	fieldVals := reflect.ValueOf(indexData).Elem()
 
-	remain := data.Size
+	remain := dataInfo.Size
 
 	allMetadataParsed := false
 	for !allMetadataParsed {

@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -13,7 +14,6 @@ import (
 	"sync"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
-	"github.com/DEliasVCruz/db-indexer/pkg/search"
 	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
@@ -22,11 +22,12 @@ type Indexer struct {
 	dataFolder fs.FS
 	Config     []byte
 	FileType   string
+	id         string
 	archive    io.Reader
 	wg         *sync.WaitGroup
 }
 
-func NewIndex(name, filetype string, upload *data.UploadData) {
+func NewIndex(name, filetype, id string, upload *data.UploadData) {
 	defer upload.File.Close()
 
 	i := &Indexer{}
@@ -73,6 +74,19 @@ func NewIndex(name, filetype string, upload *data.UploadData) {
 	}
 
 	i.index()
+	response, err := json.Marshal(
+		&data.FileUploaded{
+			Uploaded: true,
+			State:    "done",
+			ID:       i.id,
+		},
+	)
+	if err != nil {
+		log.Println("index status marshaling failed")
+		return
+	}
+
+	go zinc.CreateDoc("indexStatus", response)
 }
 
 func (i Indexer) index() {
@@ -84,7 +98,7 @@ func (i Indexer) index() {
 		zinc.CreateIndex(i.Name, i.Config)
 	}
 
-	records := make(chan *search.Data)
+	records := make(chan *data.Fields, 10)
 
 	i.wg.Add(1)
 	switch i.FileType {
@@ -104,7 +118,7 @@ func (i Indexer) index() {
 	i.wg.Wait()
 }
 
-func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- *search.Data) {
+func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- *data.Fields) {
 	tr := tar.NewReader(archive)
 
 	var wg sync.WaitGroup
@@ -155,7 +169,7 @@ func (i Indexer) extractTAR(archive io.Reader, writeCh chan<- *search.Data) {
 
 }
 
-func (i Indexer) extractFS(directory fs.FS, writeCh chan<- *search.Data) {
+func (i Indexer) extractFS(directory fs.FS, writeCh chan<- *data.Fields) {
 	defer i.wg.Done()
 
 	var wg sync.WaitGroup
@@ -191,10 +205,10 @@ func (i Indexer) extractFS(directory fs.FS, writeCh chan<- *search.Data) {
 	close(writeCh)
 }
 
-func (i Indexer) collectRecords(readCh <-chan *search.Data) {
+func (i Indexer) collectRecords(readCh <-chan *data.Fields) {
 	defer i.wg.Done()
 
-	var records [500]*search.Data
+	var records [500]*data.Fields
 	size := len(records)
 	recordIdx := 0
 
@@ -202,7 +216,7 @@ func (i Indexer) collectRecords(readCh <-chan *search.Data) {
 		if recordIdx < size {
 			records[recordIdx] = record
 		} else {
-			recordsSlice := make([]*search.Data, size)
+			recordsSlice := make([]*data.Fields, size)
 			copy(recordsSlice, records[:])
 
 			i.wg.Add(1)
@@ -216,7 +230,7 @@ func (i Indexer) collectRecords(readCh <-chan *search.Data) {
 	}
 
 	if recordIdx != 0 {
-		recordsSlice := make([]*search.Data, recordIdx)
+		recordsSlice := make([]*data.Fields, recordIdx)
 		copy(recordsSlice, records[:recordIdx])
 
 		i.wg.Add(1)

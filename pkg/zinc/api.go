@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/DEliasVCruz/db-indexer/pkg/data"
 	"github.com/DEliasVCruz/db-indexer/pkg/requests"
-	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
 var request = requests.Request{
@@ -71,7 +71,7 @@ func DeleteDoc(index, id string) {
 
 }
 
-func CreateDocBatch(index string, payLoad []*search.Data, wg *sync.WaitGroup) {
+func CreateDocBatch(index string, payLoad []*data.Fields, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	jsonSlice, _ := json.Marshal(payLoad)
