@@ -40,7 +40,6 @@ func CreateIndex(index string, config []byte) error {
 		)
 	}
 
-	log.Printf("index: the %s index was created", index)
 	return nil
 }
 

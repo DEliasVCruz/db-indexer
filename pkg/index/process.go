@@ -3,7 +3,6 @@ package index
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"reflect"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/DEliasVCruz/db-indexer/pkg/check"
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
-	"github.com/DEliasVCruz/db-indexer/pkg/zinc"
 )
 
 var messageRegex = regexp.MustCompile(`^<(\d+\.\d+)\..*`)
@@ -39,11 +37,7 @@ func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sy
 
 	check.Error("fileOpen", err)
 	if err != nil {
-		go zinc.LogError(
-			"appLogs",
-			fmt.Sprintf("failed to open file at path %s", path),
-			err.Error(),
-		)
+		log.Printf("failed to open file %v", path)
 		return
 	}
 	defer input.Close()
@@ -57,17 +51,56 @@ func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sy
 	fieldName.Grow(25)
 	fieldValue.Grow(80)
 
-	fileBuff := bufio.NewReaderSize(input, 1024)
+	fileBuff := bufio.NewReaderSize(input, dataInfo.Size)
 	fieldVals := reflect.ValueOf(indexData).Elem()
 
 	remain := dataInfo.Size
 
+	line, err := fileBuff.ReadSlice('\n')
+	remain -= len(line)
+	if err != nil && err != io.EOF {
+		log.Printf("error reading %s file metadata", path)
+		log.Println(err.Error())
+		return
+	}
+
+	if err == io.EOF {
+		log.Printf("error reading %s file metadata", path)
+		log.Println(err.Error())
+		return
+	}
+
+	sepIdx := bytes.IndexByte(line, ':')
+	if sepIdx < 0 {
+		log.Printf("invalid metadata at file %s", path)
+		return
+	}
+
+	name := bytes.ReplaceAll(line[:sepIdx], []byte("-"), []byte(""))
+
+	if len(name) > 25 {
+		log.Printf("invalid metadata at file %s", path)
+		return
+	}
+
+	if !bytes.Equal(name, []byte("MessageID")) {
+		log.Printf("invalid metadata at file %s", path)
+		return
+	}
+
+	fieldName.Write(name)
+	field = fieldName.String()
+
+	fieldValue.Write(bytes.TrimSpace(line[sepIdx+1:]))
+	fieldVals.FieldByName(field).SetString(fieldValue.String())
+
 	allMetadataParsed := false
 	for !allMetadataParsed {
-		line, err := fileBuff.ReadSlice('\n')
+		line, err = fileBuff.ReadSlice('\n')
 		remain -= len(line)
 		if err != nil && err != io.EOF {
-			fmt.Printf("error reading %s file metadata", path)
+			log.Printf("error reading %s file metadata", path)
+			log.Println(err.Error())
 			return
 		}
 
@@ -75,7 +108,7 @@ func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sy
 			break
 		}
 
-		sepIdx := bytes.IndexByte(line, ':')
+		sepIdx = bytes.IndexByte(line, ':')
 		if sepIdx < 0 {
 			fieldValue.WriteString(" ")
 			fieldValue.Write(bytes.TrimSpace(line))
@@ -83,7 +116,7 @@ func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sy
 			continue
 		}
 
-		name := bytes.ReplaceAll(line[:sepIdx], []byte("-"), []byte(""))
+		name = bytes.ReplaceAll(line[:sepIdx], []byte("-"), []byte(""))
 
 		if len(name) > 25 {
 			fieldValue.WriteString(" ")
@@ -107,6 +140,7 @@ func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sy
 			break
 		}
 
+		fieldName.Reset()
 		fieldName.Write(name)
 
 		if !fieldVals.FieldByName(fieldName.String()).IsValid() {
@@ -130,7 +164,6 @@ func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sy
 
 	if !allMetadataParsed {
 		log.Printf("data: broken metadata at path %s", path)
-		go zinc.LogError("appLogs", fmt.Sprintf("broken metadata at %s", path), "aborting indexing")
 		return
 	}
 
@@ -141,7 +174,7 @@ func (i Indexer) extract(dataInfo *data.DataInfo, ch chan<- *data.Fields, wg *sy
 	for {
 		line, err := fileBuff.ReadSlice('\n')
 		if err != nil && err != io.EOF {
-			fmt.Printf("error reading %s file metadata", path)
+			log.Printf("error reading %s file contents", path)
 			return
 		}
 

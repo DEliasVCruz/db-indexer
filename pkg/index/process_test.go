@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/data"
 )
@@ -199,6 +200,45 @@ func TestExtractMissingMetadataError(t *testing.T) {
 	case got = <-ch:
 		t.Error("Expected empty map, got ", got)
 	default:
+	}
+
+}
+
+func TestMetadataValid(t *testing.T) {
+
+	ch := make(chan *data.Fields)
+	wg := sync.WaitGroup{}
+	path := "2470_"
+
+	index := Indexer{
+		FileType:   "fs",
+		dataFolder: os.DirFS("../../enron_mail_20110402/maildir/haedicke-m/all_documents"),
+	}
+	file, err := index.dataFolder.Open(path)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	info, err := file.Stat()
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	dataInfo := &data.DataInfo{RelPath: path, Size: int(info.Size())}
+
+	t.Cleanup(func() {
+		close(ch)
+	})
+
+	wg.Add(1)
+	go index.extract(dataInfo, ch, &wg)
+
+	time.Sleep(1 * time.Second)
+
+	select {
+	case <-ch:
+	default:
+		t.Error("expected valid metadata")
 	}
 
 }
