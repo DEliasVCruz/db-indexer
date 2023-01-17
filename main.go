@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -15,16 +16,31 @@ import (
 func main() {
 
 	var port int
+	var indexDir string
+	var name string
 	flag.IntVar(&port, "port", 8000, "port to set the app server to listen to")
+	flag.StringVar(&indexDir, "index-dir", "", "directory to index before starting server")
+	flag.StringVar(&name, "index name", "", "name of your first index")
 	flag.Parse()
 
 	if err := check.ValidPort(port); err != nil {
-		fmt.Println(err.Error())
-		fmt.Println("Provide a port number between 1023 and 65535")
+		log.Println(err.Error())
+		log.Println("Provide a port number between 1023 and 65535")
 		os.Exit(1)
 	}
 
 	ipAddr := check.GetIP()
+
+	if indexDir != "" {
+
+		if name == "" {
+			name = "MyIndex"
+		}
+
+		if err := handlers.CreateDirIndex(indexDir, name); err != nil {
+			log.Println(err.Error())
+		}
+	}
 
 	r := chi.NewRouter()
 

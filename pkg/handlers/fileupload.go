@@ -114,3 +114,20 @@ func FileUpload(w http.ResponseWriter, r *http.Request) {
 	w.Write(response)
 
 }
+
+func CreateDirIndex(dir, indexName string) error {
+	indexId, err := exec.Command("uuidgen").Output()
+	if err != nil {
+		return err
+	}
+
+	index.NewIndex(
+		indexName,
+		"folder",
+		string(indexId),
+		&data.UploadData{Folder: dir},
+	)
+
+	return nil
+
+}
