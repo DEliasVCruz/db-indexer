@@ -1,12 +1,20 @@
 package data
 
 import (
+	"encoding/json"
+	"errors"
 	"reflect"
 
 	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
-func BuildResponse(response *search.Response) *SearchResponse {
+func BuildSearchResponse(responseBody []byte) (*SearchResponse, error) {
+	var response *search.Response
+
+	if err := json.Unmarshal(responseBody, &response); err != nil {
+		return nil, errors.New("could not unmarshal responsse")
+	}
+
 	columns := &Columns{}
 
 	columnsValues := reflect.ValueOf(columns).Elem()
@@ -29,5 +37,24 @@ func BuildResponse(response *search.Response) *SearchResponse {
 		})
 	}
 
-	return &SearchResponse{Data: &Data{Columns: columnsData, Total: response.Hits.Total.Value}}
+	return &SearchResponse{Data: &Data{
+		Columns: columnsData,
+		Total:   response.Hits.Total.Value}}, nil
+}
+
+func BuildIndexSearchResponse(responseBody []byte) (*FileUploaded, error) {
+	var response *search.IndexStatusResponse
+
+	if err := json.Unmarshal(responseBody, &response); err != nil {
+		return nil, errors.New("could not unmarshal responsse")
+	}
+
+	indexStatus := response.Hits.Found[0].Source
+
+	return &FileUploaded{
+		Uploaded: indexStatus.Uploaded,
+		State:    indexStatus.State,
+		ID:       indexStatus.ID,
+	}, nil
+
 }

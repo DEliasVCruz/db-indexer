@@ -9,7 +9,7 @@ import (
 	"github.com/DEliasVCruz/db-indexer/pkg/search"
 )
 
-func Search(index string, searchQuery *search.SearchQuery) (*search.Response, error) {
+func Search(index string, searchQuery *search.SearchQuery) ([]byte, error) {
 
 	jsonPayload, err := json.Marshal(searchQuery)
 	if err != nil {
@@ -23,11 +23,5 @@ func Search(index string, searchQuery *search.SearchQuery) (*search.Response, er
 		return nil, err
 	}
 
-	var response *search.Response
-
-	if err := json.Unmarshal(body, &response); err != nil {
-		return nil, errors.New("could not unmarshal responsse")
-	}
-
-	return response, nil
+	return body, nil
 }

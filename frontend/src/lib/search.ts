@@ -13,7 +13,7 @@ export async function search(
   size: number,
   field: string
 ) {
-  const url = new URL("http://localhost:3000/index/emailsTest/search");
+  const url = new URL("http://localhost:3000/api/index/emailsTest/search");
 
   let response: Response;
 

@@ -41,3 +41,23 @@ type Data struct {
 	FilePath    string `json:"file_path"`
 	Contents    string `json:"contents"`
 }
+
+type IndexStatusResponse struct {
+	Took     int              `json:"took"`
+	TimedOut bool             `json:"timed_out"`
+	Hits     *indexStatusHits `json:"hits"`
+}
+
+type indexStatusHits struct {
+	Found []*indexStatusHit `json:"hits"`
+}
+
+type indexStatusHit struct {
+	Source *indexStatus `json:"_source"`
+}
+
+type indexStatus struct {
+	Uploaded bool   `json:"uploaded"`
+	State    string `json:"state"`
+	ID       string `json:"_id"`
+}

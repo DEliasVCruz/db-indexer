@@ -9,6 +9,7 @@ type SearchQuery struct {
 type QueryType struct {
 	Match map[string]*Query `json:"match,omitempty"`
 	Bool  *QueryBool        `json:"bool,omitempty"`
+	Ids   *Ids              `json:"ids,omitempty"`
 }
 
 type Query struct {
@@ -17,4 +18,8 @@ type Query struct {
 
 type QueryBool struct {
 	Must []*QueryType `json:"must"`
+}
+
+type Ids struct {
+	Values []string `json:"values"`
 }

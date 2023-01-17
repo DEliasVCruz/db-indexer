@@ -8,7 +8,7 @@ async function uploadFile(file: File) {
   const data = new FormData();
   data.append("file", file, file.name);
   const response = await request.put({
-    endpoint: new URL("http://localhost:3000/upload"),
+    endpoint: new URL("http://localhost:3000/api/index/indexName/upload"),
     dataTransfer: data,
   });
 

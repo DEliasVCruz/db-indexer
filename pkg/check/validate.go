@@ -6,7 +6,8 @@ import (
 )
 
 var requiredParams = map[string][]string{
-	"search": {"q", "from", "size", "field"},
+	"search":      {"q", "from", "size", "field"},
+	"indexStatus": {"id"},
 }
 
 func ParamsOf(endpoint string, params url.Values) error {

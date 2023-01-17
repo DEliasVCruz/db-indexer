@@ -38,10 +38,16 @@ func main() {
 
 		r.Get("/", handlers.ServeFile("./static/app/index.html"))
 
-		r.Route("/{indexName}", func(r chi.Router) {
+		r.Get("/{indexName}", handlers.ServeFile("./static/app/index.html"))
 
-			r.Get("/", handlers.ServeFile("./static/app/index.html"))
+	})
+
+	r.Route("/api", func(r chi.Router) {
+
+		r.Route("/index/{indexName}", func(r chi.Router) {
+
 			r.Get("/search", handlers.SearchField)
+			r.Get("/status", handlers.SearchIndexStatus)
 			r.Post("/search", handlers.SearchAdvance)
 			r.Put("/upload", handlers.FileUpload)
 
