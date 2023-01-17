@@ -28,7 +28,9 @@ type Indexer struct {
 }
 
 func NewIndex(name, filetype, id string, upload *data.UploadData) {
-	defer upload.File.Close()
+	if upload.File != nil {
+		defer upload.File.Close()
+	}
 
 	i := &Indexer{}
 
