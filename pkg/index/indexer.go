@@ -32,10 +32,23 @@ func NewIndex(name, filetype, id string, upload *data.UploadData) {
 		defer upload.File.Close()
 	}
 
-	i := &Indexer{}
+	file, err := os.Open("./index.json")
+	if err != nil {
+		log.Println("could not open index config file")
+		log.Println(err.Error())
+	}
+
+	fileStat, err := file.Stat()
+	if err != nil {
+		log.Println("could not get file stats")
+		log.Println(err.Error())
+	}
+
+	i := &Indexer{Config: make([]byte, fileStat.Size())}
 
 	i.Name = name
 	i.wg = &sync.WaitGroup{}
+	file.Read(i.Config)
 
 	switch filetype {
 	case "x-gzip":
@@ -108,12 +121,13 @@ func (i Indexer) index() error {
 	if !zinc.ExistsIndex(i.Name) {
 		log.Printf("index: creating %s index", i.Name)
 		if err := zinc.CreateIndex(i.Name, i.Config); err != nil {
+			log.Println(err.Error())
 			return err
 		}
 	}
-	log.Printf("index: %s index already exists", i.Name)
+	log.Printf("index: the %s index was created", i.Name)
 
-	records := make(chan *data.Fields, 10)
+	records := make(chan *data.Fields)
 
 	i.wg.Add(1)
 	switch i.FileType {
@@ -205,6 +219,7 @@ func (i Indexer) extractFS(directory fs.FS, writeCh chan<- *data.Fields) {
 				fmt.Printf("failed to get info for path %s", childPath)
 			}
 
+			log.Printf("processing file %s", dir.Name())
 			wg.Add(1)
 			go i.extract(
 				&data.DataInfo{
