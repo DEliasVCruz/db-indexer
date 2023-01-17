@@ -1,0 +1,124 @@
+{
+  "name": "MyIndex",
+  "storage_type": "disk",
+  "shard_num": 3,
+  "settings": {},
+  "mappings": {
+    "properties": {
+      "message_id": {
+        "type": "keyword",
+        "index": true
+      },
+      "date": {
+        "type": "date",
+        "format": "Mon, 2 Jan 2006 15:04:05 -0700 (MST)",
+        "time_zone": "",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "from": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "to": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "subject": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "cc": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "mime_version": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": false
+      },
+      "content_type": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": false
+      },
+      "charset": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": false
+      },
+      "content_transfer_encoding": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": false
+      },
+      "bcc": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "x_from": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "x_to": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "x_cc": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "x_bcc": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "x_folder": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "x_origin": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "x_filename": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": true
+      },
+      "contents": {
+        "type": "text",
+        "index": true,
+        "sortable": true,
+        "aggregatable": false
+      }
+    }
+  }
+}
