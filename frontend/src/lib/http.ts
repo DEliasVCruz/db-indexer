@@ -9,15 +9,11 @@ interface RequestParams {
 
 export const request = {
   async get({ endpoint, urlParams: params }: RequestParams) {
-    let url: URL;
-
     if (typeof params !== "undefined") {
-      url = new URL(`?${params.toString()}`, endpoint);
-    } else {
-      url = endpoint;
+      endpoint = new URL(`?${params.toString()}`, endpoint);
     }
 
-    return fetch(url);
+    return fetch(endpoint);
   },
 
   async post({ endpoint, bodyPayload: body }: RequestParams) {

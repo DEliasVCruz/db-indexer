@@ -18,9 +18,11 @@ func main() {
 	var port int
 	var indexDir string
 	var name string
+
 	flag.IntVar(&port, "port", 8000, "port to set the app server to listen to")
 	flag.StringVar(&indexDir, "index-dir", "", "directory to index before starting server")
 	flag.StringVar(&name, "index name", "", "name of your first index")
+
 	flag.Parse()
 
 	if err := check.ValidPort(port); err != nil {
